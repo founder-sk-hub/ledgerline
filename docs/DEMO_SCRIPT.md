@@ -20,14 +20,18 @@ seconds of the synthetic staff voice memo. All documents in it are synthetic.
 
 ## X post (Most Viral prize)
 
-Post it with the video attached and tag @AIatMeta:
+`demo_video.py short` cuts `docs/video/ledgerline-x.mp4` (1:33) from the full video: the hook, SAM count and voice
+memo, fake bank email and second pass, approval, results. Standard X accounts upload videos up to 2:20. Upload the
+file itself (X autoplays it; a YouTube link only shows a preview), post from your own account, and keep it public.
+The text fits X's 280-character limit:
 
 > Ten sacks of coffee billed. Nine on the pallet.
 >
-> I built Ledgerline for the @AIatMeta hackathon. It reads supplier bills, hears a staff voice memo, counts the
-> delivery with SAM 3.1 and catches a fake bank-detail email, then waits for my OK before it makes any payment file.
+> I built Ledgerline for the @AIatMeta hackathon: it checks supplier bills against what really arrived and waits
+> for my OK before any payment.
 >
-> Muse Spark · Muse Voice Transcribe · SAM 3.1 · Muse Glimmer on my laptop
+> Muse Spark · SAM 3.1 · Muse Voice Transcribe
 >
 > Try it: founder-sk-hub.github.io/ledgerline
-> Code: github.com/founder-sk-hub/ledgerline
+
+Reply to your own post with the code link: github.com/founder-sk-hub/ledgerline

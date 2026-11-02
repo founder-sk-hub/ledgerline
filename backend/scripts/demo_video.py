@@ -3,8 +3,9 @@ camera zooms and captions, paced to the narration clips from demo_voice.py.
 
     .venv/bin/python backend/scripts/demo_video.py record     # needs the app on http://localhost:8020
     .venv/bin/python backend/scripts/demo_video.py assemble
+    .venv/bin/python backend/scripts/demo_video.py short       # X cut from the assembled video
 
-Video production only; not part of the product. Output: docs/video/ledgerline-demo.mp4
+Video production only; not part of the product. Output: docs/video/ledgerline-demo.mp4 (and ledgerline-x.mp4)
 """
 
 from __future__ import annotations
@@ -355,10 +356,36 @@ def assemble() -> None:
            "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "30",
            "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-shortest", "-movflags", "+faststart", str(OUT)]
     subprocess.run(cmd, check=True, capture_output=True)
-    dur = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(OUT)],
-                         capture_output=True, text=True).stdout.strip()
-    print(f"wrote {OUT} ({float(dur):.1f}s, {OUT.stat().st_size / 1e6:.1f} MB)")
+    print(f"wrote {OUT} ({duration(OUT):.1f}s, {OUT.stat().st_size / 1e6:.1f} MB)")
+
+
+# X cut (standard X accounts upload up to 2:20): hook, SAM + voice memo, fraud + second pass, approval, results.
+# Each part is (from cue, offset s, to cue, offset s) on the assembled video; None is its start or end.
+SHORT = [(None, 0, "intro", 0), ("sam", -0.4, "memo", 10.3), ("fraud", -0.5, "verify", 7.8),
+         ("approve", -0.35, "private", -2.2), ("close", -0.4, None, 0)]
+SHORT_OUT = OUT.with_name("ledgerline-x.mp4")
+
+
+def short() -> None:
+    at = {c["name"]: c["t"] for c in json.loads((WORK / "cues.json").read_text())["cues"]}
+    end, parts, labels = duration(OUT), [], ""
+    for i, (a, da, b, db) in enumerate(SHORT):
+        s, e = at[a] + da if a else 0.0, at[b] + db if b else end
+        parts.append(f"[0:v]trim={s:.2f}:{e:.2f},setpts=PTS-STARTPTS[v{i}];[0:a]atrim={s:.2f}:{e:.2f},"
+                     f"asetpts=PTS-STARTPTS,afade=t=in:d=0.05,afade=t=out:st={e - s - 0.08:.2f}:d=0.08[a{i}]")
+        labels += f"[v{i}][a{i}]"
+    flt = ";".join(parts) + f";{labels}concat=n={len(SHORT)}:v=1:a=1[v][a]"
+    subprocess.run(["ffmpeg", "-y", "-i", str(OUT), "-filter_complex", flt, "-map", "[v]", "-map", "[a]",
+                    "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p", "-r", "30",
+                    "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", str(SHORT_OUT)],
+                   check=True, capture_output=True)
+    print(f"wrote {SHORT_OUT} ({duration(SHORT_OUT):.1f}s, {SHORT_OUT.stat().st_size / 1e6:.1f} MB)")
+
+
+def duration(path: Path) -> float:
+    return float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                 str(path)], capture_output=True, text=True).stdout.strip())
 
 
 if __name__ == "__main__":
-    {"record": record, "assemble": assemble}[sys.argv[1] if len(sys.argv) > 1 else "record"]()
+    {"record": record, "assemble": assemble, "short": short}[sys.argv[1] if len(sys.argv) > 1 else "record"]()
