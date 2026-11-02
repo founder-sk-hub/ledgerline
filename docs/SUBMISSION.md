@@ -65,13 +65,19 @@ machine with Muse Glimmer. That matters to small German businesses that don't wa
 
 **Feedback on partner technologies (optional)**
 
-Meta Model API was quick to integrate through the OpenAI SDK. Two things cost us time:
-- `tool_choice` accepts only `"auto"`.
-- Strict structured output needs every property required and `additionalProperties: false`; without that the
-  model invented keys.
+Meta Model API worked through the OpenAI SDK with only a base-URL change. The final 32-document run made 133 calls
+with no errors for $1.10, and the whole build used about $7.50 of credits. What cost us time:
+- `tool_choice` accepts only `"auto"`; naming a tool returns a 400, so we ask for the final tool call in words.
+- Strict structured output needs every property required and `additionalProperties: false`; with optional
+  properties the model invented keys.
+- Reasoning tokens count against `max_tokens`: a 3,000-token limit cut a batch plan off in the middle of the JSON.
+- Muse Voice Transcribe rejects bias keywords longer than 30 characters (400); we found the limit by trial.
+- Creating an API key required adding a card and a €20 hold, although the hackathon credits covered all usage.
 
-SAM 3.1 counted all nine sacks on the first try. Muse Glimmer on Ollama's MLX engine has no constrained decoding
-and defaults to long reasoning; `reasoning_effort: "low"` made it about three times faster.
+SAM 3.1 counted all nine sacks on the first try, and Muse Voice Transcribe handled a German voice memo well (it
+sometimes repeats a word). Muse Glimmer on Ollama's MLX engine has no constrained decoding and defaults to long
+reasoning; `reasoning_effort: "low"` made it about three times faster, but six documents still took 45 minutes on
+an M3 Pro.
 
 **Biggest obstacle:** finding clear documentation for structured-output limits, and slow local inference for the
 open-weight model.

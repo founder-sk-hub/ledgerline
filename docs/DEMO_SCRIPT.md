@@ -20,6 +20,13 @@ seconds of the synthetic staff voice memo. All documents in it are synthetic.
 
 ## X post (Most Viral prize)
 
+`demo_social.py` makes the X versions from a fresh replay of the recorded run: `ledgerline-x-vertical.mp4`
+(1080×1920) and `ledgerline-x-square.mp4` (1080×1080), 33.5 s each. Fast cuts on a 120 BPM grid, burned-in captions,
+a music bed synthesised by the script itself, and the real staff voice memo with the music ducked under it. It shows
+the coffee short delivery (SAM count, the bill as Muse Spark read it, the held invoice), the milk voice memo, the
+export waiting for approval, and the approver signing off the supplier's correction email (Ledgerline never pays a
+reduced amount; it holds the bill and asks for a corrected invoice).
+
 `demo_video.py short` cuts `docs/video/ledgerline-x.mp4` (1:33) from the full video: the hook, SAM count and voice
 memo, fake bank email and second pass, approval, results. Standard X accounts upload videos up to 2:20. Upload the
 file itself (X autoplays it; a YouTube link only shows a preview), post from your own account, and keep it public.
