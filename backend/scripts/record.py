@@ -94,7 +94,7 @@ async def main() -> None:
     m = st["metrics"]
     print(f"\nstatus {st['run']['status']} · {time.time() - t0:.0f}s · {m['llm_calls']} calls ({m['llm_errors']} errors) · "
           f"${m['cost_usd']:.4f} · EUR at risk {m['eur_at_risk']:,.2f} · total spend so far ${db.total_spend():.2f}")
-    ev = evaluate(st) if not (args.limit or args.only) else None
+    ev = evaluate(st)
     if ev:
         print(f"benchmark: stopped {ev['anomalous_documents_stopped']}/{ev['anomalous_documents']} anomalous docs · "
               f"flag recall {ev['flag_recall']} · precision {ev['flag_precision']} · decisions {ev['decision_accuracy']}")

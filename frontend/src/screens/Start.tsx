@@ -220,7 +220,7 @@ const ENGINE: Record<Provider["key"], { title: string; text: string; missing: st
   },
   local: {
     title: "Private · on this laptop",
-    text: "Muse Glimmer (open weights) runs on your own machine via Ollama. No document leaves it. Voice memos and SAM are skipped.",
+    text: "Muse Glimmer (open weights) runs on your own machine via Ollama. No document leaves it. Slower (minutes per document); voice memos and SAM are skipped.",
     missing: "Start Ollama and pull muse-glimmer (see README)",
   },
   private: {

@@ -48,7 +48,7 @@ class ProviderConfig:
     model: str
     api_key: str
     developer_role: str  # role used for instructions
-    structured: str  # "json_schema" | "tool"
+    structured: str  # "json_schema" | "tool" | "prompt"
     reasoning_effort: bool  # whether to send reasoning_effort
     open_weights: bool
     local: bool = False  # runs on this machine: no document leaves it
@@ -118,7 +118,7 @@ def providers() -> dict[str, ProviderConfig]:
             model=_env("LOCAL_MODEL", "muse-glimmer:30b-mlx"),
             api_key="ollama",  # Ollama needs no key; the OpenAI client wants a non-empty string
             developer_role="system",
-            structured="json_schema",
+            structured=_env("LOCAL_STRUCTURED", "prompt"),  # Ollama's MLX engine has no constrained decoding
             reasoning_effort=False,
             open_weights=True,
             local=True,

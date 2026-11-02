@@ -162,8 +162,16 @@ def strict_tools(tools: list[dict]) -> list[dict]:
     return [{**t, "function": {**t["function"], "parameters": strictify(t["function"]["parameters"])}} for t in tools]
 
 
+def schema_instructions(schema: dict) -> str:
+    return ("\n\nRespond with ONLY one JSON object (no prose, no code fences) that matches this JSON Schema; every "
+            "property is required:\n" + json.dumps(strictify(schema), ensure_ascii=False))
+
+
 def structured_request(provider: Provider, name: str, schema: dict) -> dict:
-    """kwargs that make a chat call return `schema`-shaped JSON on this provider."""
+    """kwargs that make a chat call return `schema`-shaped JSON on this provider ("prompt" mode: none, the schema
+    goes into the instructions instead, see schema_instructions)."""
+    if provider.cfg.structured == "prompt":
+        return {}
     if provider.cfg.structured == "json_schema":
         return {"response_format": {"type": "json_schema", "json_schema": {"name": name, "schema": schema}}}
     tool = {"type": "function", "function": {"name": name, "description": "Return the result.", "parameters": schema}}

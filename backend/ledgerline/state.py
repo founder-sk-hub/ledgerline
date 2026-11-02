@@ -188,11 +188,13 @@ def evaluate(st: dict) -> dict | None:
         rows.append({"filename": d["filename"], "expected_flags": sorted(expected), "flags": sorted(got),
                      "expected_decision": t["decision"], "decision": d["final_status"], "decision_ok": decision_ok,
                      "caught": caught})
-    planted = sum(1 for t in truth.values() if t["flags"] and t["decision"] in OPEN_STATUSES)
+    present = {r["filename"] for r in rows}  # subset runs are scored on the documents they contain
+    planted = sum(1 for f, t in truth.items() if f in present and t["flags"] and t["decision"] in OPEN_STATUSES)
     caught_docs = sum(1 for r in rows if r["expected_decision"] in OPEN_STATUSES and r["decision"] in OPEN_STATUSES)
     return {
         "documents": len(rows), "flag_precision": round(tp / (tp + fp), 3) if tp + fp else None,
         "flag_recall": round(tp / (tp + fn), 3) if tp + fn else None, "decision_accuracy": round(decisions_ok / len(rows), 3)
         if rows else None, "anomalous_documents": planted, "anomalous_documents_stopped": caught_docs,
-        "eur_at_risk_planted": round(sum(t.get("at_risk", 0) for t in truth.values()), 2), "rows": rows,
+        "eur_at_risk_planted": round(sum(t.get("at_risk", 0) for f, t in truth.items() if f in present), 2),
+        "rows": rows,
     }

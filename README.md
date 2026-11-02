@@ -144,7 +144,11 @@ used for product improvement; the demo data is synthetic for that reason.
 
 To run the local engine: install [Ollama](https://ollama.com) ≥ 0.32.7, then `ollama pull muse-glimmer:30b-mlx`
 (19 GB; fits a 32 GB+ Apple-silicon Mac) and choose *Private · on this laptop* in the UI, or
-`record.py --provider local`.
+`record.py --provider local`. The trade-off is speed: on an M3 Pro (36 GB) Glimmer needs about 75 s per page image
+versus about 3 s on Meta Model API, so a document takes a few minutes. That suits an overnight batch. The recorded
+private-mode replay covers a 7-document subset (clean invoice, duplicate pair, wrong VAT, payment-diversion email,
+delivery photo with its invoice). Ollama's MLX engine has no constrained decoding, so the local engine gets the JSON
+schema in its instructions and its output is parsed strictly, with one retry.
 
 ## Non-AI services and libraries
 

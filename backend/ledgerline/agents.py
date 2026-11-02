@@ -17,7 +17,8 @@ from .config import BUDGET_USD, EFFORT, POLICY
 from .db import DB
 from .documents import asr_wav, model_content, page_images
 from .events import Bus
-from .providers import MetaMedia, Provider, ProviderError, structured_request, structured_result
+from .providers import (MetaMedia, Provider, ProviderError, schema_instructions, structured_request,
+                        structured_result)
 from .tools import (DRAFTER_TOOLS, EVIDENCE_TYPES, FLAG_CODES, INFO_CODES, INVESTIGATOR_TOOLS, PAYABLE, Books, check_goods_receipt,
                     check_vat,
                     combine_at_risk, compare_to_po, detect_duplicate, doc_gross, lookup_vendor, match_vendor, num,
@@ -277,6 +278,8 @@ class Run:
 
     async def structured(self, agent: str, doc_id: str | None, purpose: str, system: str, content: list | str,
                          name: str, schema: dict, effort: str | None, max_tokens: int = 6000) -> dict:
+        if self.p.cfg.structured == "prompt":
+            system += schema_instructions(schema)
         messages = [self.p.instructions(system), {"role": "user", "content": content}]
         for attempt in range(2):
             res = await self.llm(agent, doc_id, purpose, messages, effort=effort, max_tokens=max_tokens,
