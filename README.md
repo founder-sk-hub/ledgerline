@@ -15,7 +15,7 @@ instructions, email drafts and exceptions. Ledgerline exports files; it does not
 > theme *Build for Your World*. Built with Muse Spark Open.
 
 **Try it in your browser, no install:** https://founder-sk-hub.github.io/ledgerline/ (replays of recorded real
-runs; you are the approver).
+runs; you are the approver) · **Demo video (3 min):** https://youtu.be/Ha7zp2gprn0
 
 <!-- RESULTS:START -->
 ### Results on the synthetic benchmark (recorded live runs, replayable in the app)

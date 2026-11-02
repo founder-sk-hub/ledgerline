@@ -8,9 +8,9 @@ Paste each block into the matching field.
 
 **Public GitHub Repository:** https://github.com/founder-sk-hub/ledgerline
 
-**3-Minute Demo Video:** the YouTube link to `docs/video/ledgerline-demo.mp4`
+**3-Minute Demo Video:** https://youtu.be/Ha7zp2gprn0
 
-**X post link (Most Viral):** the link to your X post with the video
+**X post link (optional, only for the Most Viral bonus prize):** leave empty if you don't post on X
 
 ---
 
@@ -78,5 +78,4 @@ open-weight model.
 
 Before you submit, check:
 - the repo is public (it is);
-- the video link opens in a private browser window;
 - the consent checkbox at the end of the form is ticked.
