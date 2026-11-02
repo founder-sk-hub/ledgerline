@@ -12,7 +12,7 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
   const locked = state.run.status !== "awaiting_approval";
 
   if (!state.approval) {
-    return <Empty>The agent hasn't reached the approval gate yet. Drafts appear here once every document is reviewed and verified.</Empty>;
+    return <Empty>The agent hasn't reached the approval gate yet. Drafts appear here after review; unresolved documents remain exceptions.</Empty>;
   }
 
   const decide = async (item: string, decision: "approved" | "rejected") => {
@@ -26,9 +26,15 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
   };
   const decideAll = async (kind: ApprovalItem["kind"]) => {
     setBusy(true);
-    for (const i of items.filter((x) => x.kind === kind && x.decision === "pending")) await api.approve(runId, i.item, "approved");
-    await reload();
-    setBusy(false);
+    setError(null);
+    try {
+      for (const i of items.filter((x) => x.kind === kind && x.decision === "pending")) await api.approve(runId, i.item, "approved");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      await reload();
+      setBusy(false);
+    }
   };
   const execute = async () => {
     setBusy(true);
@@ -50,11 +56,19 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
   const approvedTotal = payments.filter((p) => p.decision === "approved").reduce((s, p) => s + (p.payload as PaymentItem).amount, 0);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-      <div className="space-y-5">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="min-w-0 space-y-5">
         <Card className="p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted">Agent summary for the approver</div>
-          <p className="mt-1 whitespace-pre-line text-sm leading-relaxed">{state.approval.summary}</p>
+          <div className="text-xs font-medium uppercase tracking-wide text-muted">Batch ready for review</div>
+          <p className="mt-1 text-sm leading-relaxed">
+            {payments.length} proposed payments totalling {eur(state.payment_batch?.total ?? 0)}, {emails.length} email drafts,
+            and {escalations.length} exceptions. {eur(state.metrics.eur_at_risk)} flagged as at risk.
+            Exceptions stay outside the payment export.
+          </p>
+          <details className="mt-2 text-xs text-muted">
+            <summary className="cursor-pointer">Original model summary · may contain mistakes</summary>
+            <p className="mt-2 whitespace-pre-line">{state.approval.summary}</p>
+          </details>
         </Card>
 
         <Section
@@ -119,7 +133,7 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
 
         <Section
           title={`Needs a human decision · ${escalations.length}`}
-          subtitle="The agent won't decide these on its own: unknown vendors, policy exceptions, or decisions the verifier could not confirm from the source document."
+          subtitle="Record your review here. Exceptions are excluded from this export; resolve them outside Ledgerline."
         >
           <div className="space-y-2">
             {escalations.length === 0 && <div className="text-sm text-muted">Nothing escalated.</div>}
@@ -136,7 +150,7 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
                       {p.extraction?.vendor_name} · {eur(p.extraction?.gross_total)}
                     </span>
                     <span className="ml-auto">
-                      <Decide item={i} locked={locked} onDecide={decide} approveLabel="Release for payment" rejectLabel="Don't pay" />
+                      <Decide item={i} locked={locked} onDecide={decide} approveLabel="Mark reviewed" rejectLabel="Keep on hold" />
                     </span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
@@ -154,11 +168,11 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
 
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
         <Card className="p-4">
-          <div className="text-sm font-semibold">Execute</div>
+          <div className="text-sm font-semibold">Create export</div>
           {state.executed ? (
             <div className="mt-2 space-y-3 text-sm">
               <div className="rounded-lg bg-emerald-50 p-3 text-approve">
-                Executed by a human. {state.executed.payments.length} payments, {eur(state.executed.total)}.
+                Export created. {state.executed.payments.length} payment instructions, {eur(state.executed.total)}. Nothing sent.
               </div>
               {state.executed.sepa_file && (
                 <a
@@ -250,7 +264,9 @@ function Decide({
     return (
       <span className={`text-xs font-medium ${item.decision === "approved" ? "text-approve" : item.decision === "rejected" ? "text-reject" : "text-muted"}`}>
         {item.decision === "approved" ? <Check size={13} className="mr-0.5 inline" /> : item.decision === "rejected" ? <X size={13} className="mr-0.5 inline" /> : null}
-        {item.decision}
+        {item.kind === "escalation" && item.decision !== "pending"
+          ? item.decision === "approved" ? "reviewed · excluded from export" : "on hold · excluded from export"
+          : item.decision}
       </span>
     );
   return (

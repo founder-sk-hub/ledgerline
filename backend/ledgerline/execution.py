@@ -42,15 +42,8 @@ def build_execution(st: dict, run_id: str) -> dict:
     for key, i in items.items():
         if i["kind"] == "payment" and i["decision"] == "approved":
             payments.append({**i["payload"], "approved_by": st["approvals"][key].get("actor", "human")})
-        if i["kind"] == "escalation" and i["decision"] == "approved":
-            ex = i["payload"]["extraction"] or {}
-            iban = (ex.get("iban") or "").replace(" ", "")
-            if not iban:
-                continue
-            payments.append({"vendor_id": None, "vendor_name": ex.get("vendor_name"), "iban": iban, "bic": ex.get("bic", ""),
-                             "amount": r2(abs(float(ex.get("gross_total") or 0))), "doc_ids": [i["payload"]["doc_id"]],
-                             "reference": f"RE {ex.get('invoice_number', '')}", "iban_source": "document (human-approved)",
-                             "approved_by": st["approvals"][key].get("actor", "human")})
+        # Reviewing an exception cannot create a payment from untrusted extracted
+        # bank details. Correct its records and produce a new reviewed batch first.
     out_dir = RUNTIME / "exports" / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
     batch = st["payment_batch"] or {}

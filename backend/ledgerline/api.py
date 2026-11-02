@@ -93,11 +93,14 @@ async def upload(files: list[UploadFile] = File(...)):
     for i, f in enumerate(files):
         name = re.sub(r"[^\w.\- ()]+", "_", Path(f.filename or f"file{i}").name)[:120]
         path = folder / f"{i:02d}_{name}"
-        path.write_bytes(await f.read())
+        data = await f.read()
+        if len(data) > 25_000_000:
+            raise HTTPException(413, f"{name} is larger than 25 MB")
+        path.write_bytes(data)
         try:
             docs.append(register_file(db, batch_id, i, path, taken))
-        except ValueError as e:
-            raise HTTPException(400, str(e)) from e
+        except Exception as e:  # unsupported type, corrupt PDF/WAV/image
+            raise HTTPException(400, f"{name}: could not read this file ({e})") from e
     return {"batch_id": batch_id, "documents": [_public_doc(d) for d in docs]}
 
 
@@ -259,6 +262,8 @@ def execute(run_id: str):
 
 @app.get("/api/runs/{run_id}/exports/{name}")
 def export(run_id: str, name: str):
+    if not db.run(run_id):
+        raise HTTPException(404)
     path = export_dir(run_id) / Path(name).name
     if not path.exists():
         raise HTTPException(404)

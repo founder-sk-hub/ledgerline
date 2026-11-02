@@ -57,14 +57,12 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
     <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
       <section>
         <h1 className="max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
-          A month of messy invoices in. A verified payment batch out, <span className="text-brand-2">waiting for your OK.</span>
+          Ten sacks billed. Nine delivered. <span className="text-brand-2">Catch it before you pay.</span>
         </h1>
         <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-muted">
-          Ledgerline reads PDFs, phone photos and emails, hears your staff's voice memos and counts deliveries in photos. It checks
-          everything against your vendor master, purchase orders, contracts, VAT rules, payment history and what actually arrived,
-          and catches duplicates, price drift, wrong VAT, short deliveries and payment-diversion fraud. A second Muse Spark pass
-          verifies every decision against the original document. Then it drafts the SEPA batch and vendor emails and stops:
-          nothing moves without a human.
+          Ledgerline checks supplier invoices against purchase orders, delivery photos and staff voice memos.
+          Review the evidence for a short delivery, duplicate invoice or changed bank account, then approve a payment file
+          and supplier email drafts. The demo uses a fictional Berlin coffee roaster. No payments or emails are sent.
         </p>
 
         <Card className="mt-6">
@@ -77,10 +75,13 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
                 {batch ? `${batch.documents.length} documents` : "…"}
                 {batch?.batch_id === "sample" && " · synthetic: invented vendors, IBANs and planted anomalies"}
               </div>
+              {batch && batch.batch_id !== "sample" && (
+                <div className="mt-1 text-xs text-hold">Uploads are checked against the demo company's reference records. Customer setup is not implemented.</div>
+              )}
             </div>
             {config?.live_enabled && (
               <>
-                <input ref={fileInput} type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.webp,.eml,.txt" onChange={(e) => onFiles(e.target.files)} />
+                <input ref={fileInput} type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.webp,.eml,.txt,.md,.wav" onChange={(e) => onFiles(e.target.files)} />
                 <button
                   onClick={() => fileInput.current?.click()}
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium ring-1 ring-line hover:bg-paper"
@@ -225,7 +226,7 @@ const ENGINE: Record<Provider["key"], { title: string; text: string; missing: st
   },
   private: {
     title: "Private · your open-weights server",
-    text: "Muse Spark Open (open weights) on Baseten or any OpenAI-compatible server you run. Voice memos and SAM are skipped.",
+    text: "Muse Spark Open (open weights) on Baseten or any OpenAI-compatible server you run. Configured, not benchmarked yet; voice memos and SAM are skipped.",
     missing: "Needs BASETEN_API_KEY (or PRIVATE_BASE_URL) in .env",
   },
 };

@@ -116,8 +116,8 @@ def planner_prompt(books: Books) -> str:
     return f"""You are the planning agent of Ledgerline, the accounts-payable back office of {_company(books)}.
 You receive only the manifest of an incoming batch (file names, types, email senders and subjects).
 Write the execution plan for this batch. The workflow is fixed: read every document, investigate each one against
-the vendor master, purchase orders, contracts, VAT rules and payment history, have every decision independently
-verified against the source document, draft the payment batch and vendor emails, then STOP for human approval -
+the vendor master, purchase orders, contracts, VAT rules and payment history, have every decision checked by a second
+model pass against the source document, draft the payment batch and vendor emails, then STOP for human approval -
 nothing is paid or sent without a human.
 Make the steps specific to this batch (counts, formats, languages). In `watchlist`, name the files that deserve
 extra scrutiny from manifest cues alone (possible re-sends or duplicates, bank-detail changes, reminders, unknown
@@ -194,7 +194,7 @@ Policy:
 
 
 def verifier_prompt(books: Books) -> str:
-    return f"""You are the independent verification agent of Ledgerline ({_company(books)}).
+    return f"""You are the second-pass review agent of Ledgerline ({_company(books)}).
 Another agent proposed a decision about the attached document. Check its claims against the ORIGINAL document
 (the image or email text), not against the extraction - the extraction may be wrong.
 Write one claim per material fact: vendor, invoice number, amounts, PO number, IBAN, VAT rate, and every flag.
@@ -209,7 +209,7 @@ the evidence; otherwise "confirmed". overall_confidence reflects how sure you ar
 
 def drafter_prompt(books: Books) -> str:
     return f"""You are the drafting agent of Ledgerline ({_company(books)}). Every document has been reviewed and
-independently verified. Prepare the work for the human approver - you cannot pay or send anything yourself.
+checked by a second review pass. Prepare the work for the human approver - you cannot pay or send anything yourself.
 1. draft_payment with the doc_ids of every document whose final status is "approve" (credit notes included; they
    net against the same vendor).
 2. draft_email for each vendor that must act. hold: ask for a corrected invoice or credit note, citing the exact
@@ -460,8 +460,17 @@ class Run:
         ex = self.books.extractions[did]
         gross = doc_gross(ex)
         tool_issues: dict[str, dict] = {}
-        for i in self.issues[did]:
-            tool_issues.setdefault(i["code"], i)
+        seen_msgs: set[tuple[str, str]] = set()
+        for i in self.issues[did]:  # repeated tool calls report the same issue again; count each one once
+            if (i["code"], i["message"]) in seen_msgs:
+                continue
+            seen_msgs.add((i["code"], i["message"]))
+            if i["code"] in tool_issues:
+                prev = tool_issues[i["code"]]
+                tool_issues[i["code"]] = {**prev, "message": f"{prev['message']} {i['message']}",
+                                          "at_risk_eur": r2(prev["at_risk_eur"] + i["at_risk_eur"])}
+            else:
+                tool_issues[i["code"]] = i
         kept, seen = [], set()
         for f in args.get("flags") or []:
             code = f.get("code", "OTHER")
@@ -513,11 +522,13 @@ class Run:
             ver = {"verdict": "disputed", "overall_confidence": 0.0, "claims": [], "notes": f"Verifier failed: {e}"}
         conf = float(ver.get("overall_confidence") or 0)
         unsupported = [c for c in ver.get("claims", []) if not c.get("supported")]
-        escalate = ver.get("verdict") == "disputed" or conf < POLICY["verify_min_confidence"]
+        escalate = (ver.get("verdict") != "confirmed" or bool(unsupported)
+                    or not ver.get("claims") or conf < POLICY["verify_min_confidence"])
         reason = ""
         if escalate:
             reason = (f"Verifier {ver.get('verdict')} (confidence {conf:.2f})"
-                      + (f"; unsupported: {unsupported[0]['claim']}" if unsupported else ""))
+                      + (f"; unsupported: {unsupported[0]['claim']}" if unsupported else "")
+                      + ("; no supporting claims supplied" if not ver.get("claims") else ""))
         final = {**ver, "final_status": "escalate" if escalate and dec["decision"] != "escalate" else dec["decision"],
                  "escalated": bool(escalate and dec["decision"] != "escalate"), "reason": reason}
         self.final[did] = {**dec, **final}
@@ -531,7 +542,8 @@ class Run:
     def _payment_items(self, doc_ids: list[str], execution_date: str | None) -> dict:
         items: dict[str, dict] = {}
         skipped = []
-        for did in doc_ids:
+        # A repeated model tool argument must not charge the same document twice.
+        for did in dict.fromkeys(doc_ids):
             f = self.final.get(did)
             ex = self.books.extractions.get(did)
             if not f or not ex or f["final_status"] != "approve":
@@ -625,7 +637,7 @@ class Run:
 
     # -------------------------------------------------------- orchestration
     async def execute(self) -> None:
-        self.emit("run.started", {"provider": self.p.cfg.public(), "docs": [
+        self.emit("run.started", {"provider": self.p.cfg.public(), "git_commit": _git_commit(), "docs": [
             {"doc_id": d["doc_id"], "filename": d["filename"], "kind": d["kind"], "pages": d["meta"].get("pages", 0),
              "meta": d["meta"]} for d in self.docs]}, "system")
         try:
@@ -641,6 +653,22 @@ class Run:
         except Exception as e:  # surfaced in the UI; the audit log keeps everything up to here
             self.emit("run.failed", {"error": f"{type(e).__name__}: {e}"}, "system")
             raise
+
+
+def _git_commit() -> str:
+    """Code version a run was made with (with "+dirty" for uncommitted changes)."""
+    import subprocess
+
+    from .config import ROOT
+
+    try:
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True,
+                             timeout=5).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT,
+                               capture_output=True, text=True, timeout=5).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return f"{sha}+dirty" if sha and dirty else sha
 
 
 def _next_business_day(d: date) -> date:

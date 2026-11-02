@@ -70,7 +70,7 @@ export default function App() {
             </nav>
           ) : (
             <div className="hidden text-sm text-muted md:block">
-              Reads every invoice, checks it against your books, and stops for your approval before money moves.
+              Supplier invoices, delivery evidence and payment review.
             </div>
           )}
           <div className="ml-auto flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function App() {
         {route.runId && state && route.tab === "metrics" && <Metrics state={state} runs={runs} />}
       </main>
       <footer className="mx-auto max-w-[1500px] px-4 pb-8 text-xs text-muted sm:px-6">
-        All AI in Ledgerline runs on Meta models: Muse Spark 1.3 (Meta Model API) and Muse Spark Open (open weights). Built with Muse Spark Open. Demo data is synthetic.
+        Runtime models: Muse Spark 1.3, Muse Voice Transcribe, SAM 3.1, Muse Glimmer (local). Built with Muse Spark Open. Synthetic demo data; exports do not send payments.
       </footer>
     </div>
   );

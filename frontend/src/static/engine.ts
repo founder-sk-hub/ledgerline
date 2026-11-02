@@ -138,7 +138,7 @@ export function evaluate(st: RunState, truthDocs: Any[]): RunState["evaluation"]
     const t = truth[d.filename];
     if (!t || !d.final_status) continue;
     const expected = new Set<string>(t.flags);
-    let got = new Set<string>((d.decision?.flags ?? []).map((f) => f.code));
+    const got = new Set<string>((d.decision?.flags ?? []).map((f) => f.code));
     if (got.has("VAT_ARITHMETIC") && expected.has("ARITHMETIC")) { got.delete("VAT_ARITHMETIC"); got.add("ARITHMETIC"); }
     tp += [...expected].filter((x) => got.has(x)).length;
     fp += [...got].filter((x) => !expected.has(x)).length;
@@ -147,7 +147,6 @@ export function evaluate(st: RunState, truthDocs: Any[]): RunState["evaluation"]
     ok += decision_ok ? 1 : 0;
     rows.push({ filename: d.filename, expected_flags: [...expected].sort(), flags: [...got].sort(),
       expected_decision: t.decision, decision: d.final_status, decision_ok });
-    got = new Set();
   }
   const present = new Set(rows.map((r) => r.filename));
   const round3 = (x: number) => Math.round(x * 1000) / 1000;
@@ -183,13 +182,7 @@ export function buildExecution(st: RunState, runId: string) {
   for (const i of approvalItems(st)) {
     if (i.decision !== "approved") continue;
     if (i.kind === "payment") payments.push({ ...i.payload, approved_by: "human approver" });
-    if (i.kind === "escalation") {
-      const ex = i.payload.extraction ?? {};
-      const iban = String(ex.iban ?? "").replace(/\s/g, "");
-      if (!iban) continue;
-      payments.push({ vendor_id: null, vendor_name: ex.vendor_name, iban, bic: ex.bic ?? "", amount: r2(Math.abs(Number(ex.gross_total) || 0)),
-        doc_ids: [i.payload.doc_id], reference: `RE ${ex.invoice_number ?? ""}`, iban_source: "document (human-approved)" });
-    }
+    // Exception review never adds extracted bank details to the payment export.
   }
   const emails = approvalItems(st).filter((i) => i.kind === "email" && i.decision === "approved")
     .map((i) => ({ email_id: i.payload.email_id, to: i.payload.to, subject: i.payload.subject }));

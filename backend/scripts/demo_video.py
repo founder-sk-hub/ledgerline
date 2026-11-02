@@ -189,7 +189,7 @@ def record() -> None:
         d.focus(None, settle=0.3)
         end = d.say("intro")
         d.focus(page.locator("h1").first.locator("xpath=.."), 1.2)
-        d.caption("Checks every bill against <b>your own records</b> · <b>never pays without you</b>")
+        d.caption("Checks each bill against <b>purchase orders, contracts and what arrived</b> · a person approves the payment file")
         d.wait(4.5)
         d.focus(section("Engine"), 1.45)
         d.until(end + 0.2)
@@ -208,7 +208,7 @@ def record() -> None:
         d.until(end)
         page.wait_for_selector("text=The agent stopped for your approval", timeout=180_000)
         d.focus(None, settle=0.3)
-        d.caption("Every document read, checked and <b>verified</b>; the payment batch is drafted")
+        d.caption("All 32 documents read and checked, each decision reviewed by a <b>second model pass</b>, payment file drafted")
         d.wait(2.5)
 
         st = page.request.get(f"{BASE}/api/runs/{run_id}").json()
@@ -248,8 +248,8 @@ def record() -> None:
         d.caption("→ <b>Rejected</b>. The warning goes to the supplier's <b>known</b> contact, not the sender")
         d.until(end + 0.2)
         end = d.say("verify")
-        d.focus(section("Independent verification"), 1.4)
-        d.caption("A <b>second, independent Muse Spark pass</b> checks every claim against the original")
+        d.focus(section("Second-pass review"), 1.4)
+        d.caption("A <b>second model pass</b> checks each claim against the original document and marks the evidence")
         for c in (fraud.get("verification") or {}).get("claims", [])[:3]:
             loc = page.get_by_text(c["claim"][:40], exact=False).first
             if loc.count():
@@ -298,13 +298,13 @@ def record() -> None:
         d.point(btn(re.compile("Replay the run")), click=True)
         d.wait(1.2)
         d.focus(None, settle=0.3)
-        d.caption("Same agent, same tools: every call here ran on <b>muse-glimmer</b> on the laptop, $0 in API fees")
+        d.caption("Same agent on <b>muse-glimmer</b>: slower and less precise, no voice memos or SAM · $0 in API fees")
         d.until(end + 0.5)
 
         d.go(f"#/run/{run_id}/metrics")
         end = d.say("close")
         d.focus(page.locator("text=Time saved").first.locator("xpath=ancestor::div[contains(@class,'grid')][1]"), 1.1)
-        d.caption("<b>12 / 12</b> problems stopped · <b>€8,339</b> protected · <b>6 min</b> · about <b>$1.25</b> of AI")
+        d.caption("<b>12 / 12</b> planted problems stopped · <b>€8,339</b> flagged at risk · <b>6 min</b> · <b>$1.25</b> of model calls")
         d.wait(5.0)
         d.focus(section("Accuracy on the synthetic benchmark"), 1.1)
         d.until(end + 0.3)

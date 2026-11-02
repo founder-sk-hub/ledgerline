@@ -29,9 +29,6 @@ def _env(name: str, default: str = "") -> str:
 # Token prices in USD per 1M tokens (dev.meta.ai/docs/pricing-rate-limits, baseten.co/library/muse-spark-open)
 PRICES = {
     "muse-spark-1.3": {"input": 1.25, "cached": 0.15, "output": 4.25},
-    "muse-spark-1.2": {"input": 1.25, "cached": 0.15, "output": 4.25},
-    "muse-spark-1.1": {"input": 1.25, "cached": 0.15, "output": 4.25},
-    "muse-wonder-1.0": {"input": 4.00, "cached": 0.20, "output": 20.00},
     "meta-models/muse-spark-open": {"input": 1.25, "cached": 0.15, "output": 4.25},
     "meta-models/muse-spark-open-1026": {"input": 1.25, "cached": 0.15, "output": 4.25},
     "muse-glimmer:30b-mlx": {"input": 0.0, "cached": 0.0, "output": 0.0},  # runs locally

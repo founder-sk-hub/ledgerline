@@ -42,7 +42,7 @@ def export_replay(db: DB, run_id: str, name: str) -> dict:
     data = {
         "format": FORMAT, "name": name, "source_run_id": run_id, "batch_id": run["batch_id"],
         "recorded_at": datetime.fromtimestamp(t0, timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": commit, "provider": st["run"].get("provider"),
+        "git_commit": events[0]["payload"].get("git_commit") or commit, "provider": st["run"].get("provider"),
         "stats": {k: st["metrics"][k] for k in ("llm_calls", "cost_usd", "wall_seconds", "eur_at_risk",
                                                 "input_tokens", "output_tokens", "documents")},
         "events": [{"t": round(e["ts"] - t0, 3), "type": e["type"], "agent": e["agent"], "doc_id": e["doc_id"],

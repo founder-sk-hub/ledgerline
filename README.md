@@ -1,21 +1,21 @@
 # Ledgerline
 
-**A verifiable back-office agent for small businesses, built on Meta's Muse models.**
+**Check supplier invoices against what arrived, before creating a payment file.**
 
-Drop in a messy month of invoices, receipts, contracts and supplier emails (PDFs, phone photos, scans, `.eml`),
-plus what your staff record at the back door: a **voice memo** ("only 28 cans of milk came") or a **photo of the
-delivery**. Ledgerline reads and hears every document, checks it against your vendor master, purchase orders,
-contracts, VAT rules, payment history and what actually arrived, and catches the expensive mistakes: duplicates,
-price drift, wrong VAT, over-billing, short deliveries, math errors and payment-diversion fraud. A second Muse Spark pass verifies every decision against the original document and
-cites where it found the evidence. Then it drafts the SEPA payment batch and the vendor emails, and **stops for a
-human**. Nothing is paid or sent without approval, and every step is in a replayable audit trail that answers
-"why did it do that?".
+The invoice bills 600 kg of coffee, ten 60 kg sacks. The delivery photo shows nine. Ledgerline links the invoice, purchase order
+and receiving evidence, flags the EUR 426 discrepancy, and drafts a supplier email for review.
 
-> Built entirely during the Meta Global AI Developer Hackathon (Oct 26 – Nov 4, 2026). Startup track ·
-> theme *Build for Your World*.
+The demo follows a fictional Berlin coffee roaster. Meta's Muse Spark reads invoices and runs checks against
+supplier records; Muse Voice Transcribe reads staff voice memos; SAM counts objects in delivery photos. A second
+model pass reviews the proposed decisions and cites source regions. A person reviews the resulting payment
+instructions, email drafts and exceptions. Ledgerline exports files; it does not send payments or emails.
+
+> Built during the Meta Global AI Developer Hackathon (Oct 26 – Nov 4, 2026): the code was written Nov 2–4,
+> inside the event window, and the git history starts with the first working version on Nov 2. Startup track ·
+> theme *Build for Your World*. Built with Muse Spark Open.
 
 **Try it in your browser, no install:** https://founder-sk-hub.github.io/ledgerline/ (replays of recorded real
-runs; you are the approver) · **Demo video:** see the submission page.
+runs; you are the approver).
 
 <!-- RESULTS:START -->
 ### Results on the synthetic benchmark (recorded live runs, replayable in the app)
@@ -29,17 +29,19 @@ Scored against `data/samples/ground_truth.json`, which the agent never sees. Loc
 <!-- RESULTS:END -->
 
 How to read the two rows: on Meta Model API every planted problem was stopped with no false flags; the one
-"wrong" decision is a clean invoice the verifier escalated because, on a blurry phone photo, it read the IBAN check
-digits differently than the intake pass did (it asked a human instead of guessing). On the laptop, Muse Glimmer also
-stopped every bad invoice, but it is noisier: one document came back unreadable and it escalated more to a human.
-Private mode trades some autonomy for keeping every document on the machine.
+"wrong" decision is a clean invoice the second pass escalated because, on a blurry phone photo, it read the IBAN
+check digits differently than the intake pass did (it asked a human instead of guessing). On the laptop, Muse
+Glimmer stopped all four problem documents in its six-document subset, but the coffee invoice only because its
+extraction failed and it went to a human; it also raised more false flags. Private mode trades accuracy and speed
+for keeping every document on the machine.
 
 ---
 
 ## Try it in 2 minutes (no API key)
 
-Replay mode streams **recorded real runs**: every Muse Spark call in the timeline is from a live run, with its real
-latency, token usage, cost and response id. You act as the approver.
+Replay mode streams **recorded real runs**: every model call in the timeline is from a live run, with its recorded
+latency, token usage, cost and response id. You act as the approver. (In these recordings a call's latency includes
+waiting for a free slot while six calls run in parallel; the code now times the model call alone.)
 
 ```bash
 git clone https://github.com/founder-sk-hub/ledgerline && cd ledgerline
@@ -56,11 +58,12 @@ Python 3.11+.
 cp .env.example .env     # then set MODEL_API_KEY (and BASETEN_API_KEY for private mode)
 make live                # -> http://localhost:8000, choose "Live"
 # or headless, printing every step:
-.venv/bin/python backend/scripts/record.py --provider meta           # full 30-document batch
+.venv/bin/python backend/scripts/record.py --provider meta           # full 32-document batch
 .venv/bin/python backend/scripts/record.py --provider meta --limit 3 # quick smoke test
 ```
 
-In live mode you can also upload your own documents. A local budget guard (`LEDGERLINE_BUDGET_USD`, default 40)
+Live uploads still use the fictional company's reference records; customer onboarding and reference-data import
+are not implemented. A local budget guard (`LEDGERLINE_BUDGET_USD`, default 40)
 refuses new model calls once Ledgerline's own recorded spend reaches the limit.
 
 ---
@@ -80,7 +83,7 @@ flowchart LR
   F --> SAM[SAM 3.1 counts what<br/>Muse Spark says to count]
   ASR --> I
   SAM --> I
-  P[Planner<br/>Muse Spark] --> I
+  P[Batch overview<br/>Muse Spark] -. descriptive only .-> I
   IN --> I[Intake agent<br/>Muse Spark vision:<br/>structured extraction<br/>+ evidence boxes]
   I --> INV[Investigator agent<br/>Muse Spark tool calling]
   INV <-->|lookup_vendor| T1[(Vendor master:<br/>IBANs, domains)]
@@ -90,7 +93,7 @@ flowchart LR
   INV <-->|check_goods_receipt| T5[Three-way match:<br/>PO vs invoice vs<br/>what staff received]
   INV <-->|reread_document| I
   INV --> V[Verifier agent<br/>2nd Muse Spark pass on the<br/>ORIGINAL image: claims,<br/>quotes, bounding boxes]
-  V -->|disputed or low confidence| H
+  V -->|disputed, unsupported, empty<br/>or low confidence| H
   V --> D[Drafter agent<br/>SEPA batch +<br/>vendor emails DE/EN]
   D --> H{{Human approval gate}}
   H -->|approved items only| X[Deterministic execution:<br/>SEPA pain.001 file + outbox]
@@ -99,16 +102,17 @@ flowchart LR
 
 **The model decides, code computes.** Muse Spark chooses which checks a document needs, interprets the findings
 and writes the rationale and emails. Deterministic tools do the lookups and the arithmetic and attach a computed
-EUR-at-risk to every finding, so the money figures never depend on model arithmetic.
+EUR-at-risk to every finding. Figures in flags, totals and the SEPA file come from code; free-text summaries written
+by the model can contain mistakes.
 
 | Stage | What happens | Model |
 |---|---|---|
-| Plan | Reads the batch manifest, writes a plan and a watchlist (possible re-sends, bank-change subjects, non-invoices) | Muse Spark |
-| Intake | Reads each page image or email: type, vendor, IBAN, lines, VAT, totals, anything odd (stamps, handwriting, pressure). Returns quotes and 0–1000 bounding boxes as evidence. Voice memos are transcribed first (vocabulary-biased with your vendor names); for delivery photos Muse Spark decides *what* to count ("jute coffee sack") and SAM 3.1 segments and counts every instance | Muse Spark (vision, structured output, grounding), Muse Voice Transcribe, SAM 3.1 |
+| Plan | Summarizes the batch and suggests a watchlist. This is displayed but does not control routing | Muse Spark |
+| Intake | Reads up to six page images per PDF, or an email: type, vendor, IBAN, lines, VAT and totals. Returns quotes and bounding boxes. Voice memos are transcribed first; for delivery photos Muse Spark proposes an object class and SAM returns detections | Muse Spark, Muse Voice Transcribe, SAM 3.1 |
 | Investigate | Tool loop per document: `lookup_vendor`, `compare_to_po`, `check_vat`, `detect_duplicate`, `check_goods_receipt`, `reread_document`, then `submit_decision` (approve / hold / reject / escalate / file) | Muse Spark (parallel tool calls) |
-| Verify | Independent second pass: checks each claim against the original document, with a quote, page and bounding box per claim. Disputed or < 0.75 confidence → escalated to a human | Muse Spark (vision, grounding) |
-| Draft | Builds the payment batch from verified approvals (credit notes netted, **always the vendor-master IBAN**), writes vendor emails in the vendor's language, requests approval | Muse Spark (tool calling) |
-| Approve | A human approves or rejects every payment, email and escalation | – |
+| Verify | Second pass using the same model, source document, extracted fields and proposed rationale. Disputed, unsupported, empty or low-confidence results escalate. This is model review, not independent ground truth | Muse Spark (vision, grounding) |
+| Draft | Builds a proposed payment batch from model-approved documents (selected credit notes netted, vendor-master IBANs), writes supplier email drafts, requests approval | Muse Spark (tool calling) |
+| Approve | A human approves or rejects payments and emails, and records exception reviews. Exceptions remain outside the export | – |
 | Execute | Deterministic code writes an ISO 20022 `pain.001.001.09` SEPA file and an email outbox. Nothing is transmitted | – |
 
 Every step (model call, tool call and result, decision, approval) is an append-only event. The UI, the audit trail,
@@ -140,13 +144,14 @@ note, a delivery note and a newsletter.
 | **Muse Spark 1.3** (`muse-spark-1.3`) | Meta Model API (`api.meta.ai/v1`) | All five agents in standard mode: planner, intake (vision + grounding), investigator (tool calling), verifier (vision + grounding), drafter |
 | **Muse Voice Transcribe** (`muse-voice-transcribe-1.0`) | Meta Model API | Transcribes staff voice memos (German/English code-switching, vendor names as vocabulary bias) |
 | **SAM 3.1** (`sam-3.1`) | Meta Model API | Segments and counts delivered goods in receiving photos; boxes are shown in the audit trail |
-| **Muse Glimmer** (`muse-glimmer:30b-mlx`, open weights) | **Your own laptop** via Ollama | Private mode: the same five agents fully on-device. No document leaves the machine |
-| **Muse Spark Open** (`meta-models/muse-spark-open-1026`, open weights) | Baseten, or any OpenAI-compatible server you host | Private mode on a server you control |
+| **Muse Glimmer** (`muse-glimmer:30b-mlx`, open weights) | **Your own laptop** via Ollama | Private mode: the same agents on-device, without voice memos or SAM. No document leaves the machine |
+| **Muse Spark Open** (`meta-models/muse-spark-open-1026`, open weights) | Baseten, or any OpenAI-compatible server you host | Private mode on a server you control. Configured, not benchmarked yet |
 | Muse Image (`muse-image-1.0`) | Meta Model API | Development only: generated the synthetic delivery photo in the sample batch |
 
-No other AI model is called at runtime. Model ids and endpoints are configurable in `.env`.
+The default runtime uses only Meta models. Model IDs and endpoints are configurable in `.env`; keep all runtime
+models Meta models for this submission. The OpenAI SDK is a client library here, not an OpenAI model call.
 
-**Private modes, honestly stated:** *On this laptop* runs Muse Glimmer locally through Ollama: invoices never leave
+**Private modes:** *On this laptop* runs Muse Glimmer locally through Ollama: invoices never leave
 the machine. Voice memos and SAM counting need Meta Model API, so private modes skip them (the voice memo is
 escalated to a human, photos are counted by the open model itself). *Open-weights server* sends documents to the
 server you configure (Baseten in the demo). On Meta Model API, requests paid with free promotional credits may be
@@ -154,10 +159,11 @@ used for product improvement; the demo data is synthetic for that reason.
 
 To run the local engine: install [Ollama](https://ollama.com) ≥ 0.32.7, then `ollama pull muse-glimmer:30b-mlx`
 (19 GB; fits a 32 GB+ Apple-silicon Mac) and choose *Private · on this laptop* in the UI, or
-`record.py --provider local`. The trade-off is speed: on an M3 Pro (36 GB) Glimmer needs about 75 s per page image
-versus about 3 s on Meta Model API, so a document takes a few minutes. That suits an overnight batch. The recorded
-private-mode replay covers a 7-document subset (clean invoice, duplicate pair, wrong VAT, payment-diversion email,
-delivery photo with its invoice). Ollama's MLX engine has no constrained decoding, so the local engine gets the JSON
+`record.py --provider local`. The trade-off is speed: in the recorded runs a one-page intake call took about
+2.5 minutes with Glimmer on an M3 Pro (36 GB) and 7–30 seconds on Meta Model API; the six-document local run took
+45 minutes. That suits an overnight batch. The recorded private-mode replay covers six documents, compared with 32
+in the standard run; these are not equivalent benchmarks.
+Ollama's MLX engine has no constrained decoding, so the local engine gets the JSON
 schema in its instructions and its output is parsed strictly, with one retry.
 
 ## Non-AI services and libraries
@@ -168,7 +174,8 @@ schema in its instructions and its output is parsed strictly, with one retry.
 - Backend: Python, FastAPI, Uvicorn, `openai` SDK (as an OpenAI-compatible client for Meta / Baseten endpoints),
   pypdfium2 (PDF rendering), Pillow, NumPy, sse-starlette, SQLite.
 - Frontend: React, Vite, Tailwind CSS, lucide-react icons, Inter / JetBrains Mono (Google Fonts).
-- Dev only: fpdf2 (sample generation), pytest.
+- Dev only: fpdf2 and macOS `say` (sample generation), pytest. Demo video only: Playwright, ffmpeg and ElevenLabs
+  text-to-speech (see Disclosures).
 
 ## Synthetic data and benchmark
 
@@ -176,25 +183,33 @@ Everything in `data/samples` is **synthetic**: Spree Roastery GmbH, a fictional 
 invented vendors, five POs, four contracts, a paid-invoice history, and a 32-document October batch in German and
 English. The batch includes PDFs, phone photos, a stamped scan, thermal receipts, emails, a staff voice memo
 (synthetic voice from macOS text-to-speech) and a delivery photo (generated with Meta's Muse Image). IBANs are
-checksum-valid but random. `backend/scripts/generate_samples.py` regenerates everything.
+checksum-valid but random. `backend/scripts/generate_samples.py` regenerates the batch on macOS (it uses system
+fonts and `say`, and reuses the committed Muse Image photo).
 
 `data/samples/ground_truth.json` lists the planted anomalies. It is **never shown to the agent**. It is only used
 afterwards to score a run (Metrics tab, and `record.py` output): flag precision and recall, decision accuracy, and
 how many anomalous documents were stopped.
 
-`make test` runs 70 tests. They show that, given a perfect reading of each document, the deterministic tools
-surface exactly the planted anomalies and the correct EUR at risk, and that the full pipeline through the API,
-approval gate, SEPA export and record/replay works.
+`make test` runs 74 offline tests. They check that, given a perfect reading of each document, the deterministic
+tools surface exactly the planted anomalies and EUR at risk, and that the full pipeline through the API, approval
+gate, SEPA export and record/replay works.
 
-## Safety by design
+## Export controls and limits
 
 - **Human approval gate.** The agent can only *draft*. Execution needs every item decided by a person, and then
   runs as deterministic code that uses only what was approved.
 - **Bank details come from the vendor master**, never from a document. A changed IBAN is a fraud signal, not an update.
-- **Independent verification** of every decision against the source image. Disagreement or low confidence escalates.
+- **Model review** checks proposed decisions against the source image. The same model can repeat an earlier error.
+- **Exceptions stay excluded.** Marking an exception reviewed does not release a payment or trust an extracted IBAN.
 - **Emails go only to known vendor contacts** from the master data, never to the sender of a suspicious message.
 - **Nothing is transmitted.** Ledgerline writes a SEPA file and an outbox. Uploading and sending stay human actions.
 - **Budget guard** on model spend.
+
+The benchmark is one synthetic scenario, not evidence of accuracy on unseen customer invoices. Time savings are
+estimates based on eight minutes per document and assumed review time, not measured user outcomes. PDF intake
+currently reads only the first six pages. Receiving-evidence matching needs stronger product and unit checks on
+multi-line invoices. The investigator chooses its checks and can dismiss findings; mandatory policy enforcement
+is not yet complete. The app is a prototype for local use, not a shared production accounting service.
 
 ## Browser demo and demo video
 
@@ -202,7 +217,8 @@ approval gate, SEPA export and record/replay works.
 recorded replays, the approval gate and SEPA generation run entirely in the browser (`frontend/src/static/`, a port
 of the Python fold). It is what GitHub Pages serves. The demo video is produced by `backend/scripts/demo_video.py`,
 which drives the real app with Playwright, and `demo_voice.py`, which generates the narration with ElevenLabs. Both
-are video production only and not part of the product.
+are video production only and not part of the product. A `Dockerfile` serves the replay demo (no keys) on port
+7860 for self-hosting.
 
 ## Repository layout
 
@@ -210,21 +226,29 @@ are video production only and not part of the product.
 backend/ledgerline/   agents.py (orchestrator + prompts) · tools.py (deterministic checks) · providers.py
                       documents.py (PDF/photo/email intake) · state.py (event fold + metrics + eval)
                       execution.py (approval gate, SEPA) · replay.py · api.py · db.py · config.py
-backend/scripts/      generate_samples.py · record.py
+backend/scripts/      generate_samples.py · record.py · readme_results.py · export_static.py (browser demo)
+                      demo_voice.py · demo_video.py (video production only)
 backend/tests/        tool tests against planted anomalies + end-to-end pipeline test
-frontend/src/         Start · Live run · Approval queue · Audit trail · Metrics
+frontend/src/         Start · Live run · Approval queue · Audit trail · Metrics · static/ (in-browser replay engine)
 data/samples/         synthetic company, batch, ground truth
 data/replays/         recorded real runs (replay mode)
 ```
 
 ## Disclosures
 
-- Built from scratch during the hackathon window (Oct 26 – Nov 4, 2026); no pre-existing code.
-- All runtime AI is Meta models (above). Development was assisted by an AI coding assistant; no non-Meta model is
-  part of the product or called at runtime.
+- Built from scratch during the hackathon window (Oct 26 – Nov 4, 2026); no pre-existing code. The first commit
+  (Nov 2) contains the first working version written that day.
+- The recorded replays were made before later wording, verifier and export changes; re-scoring them under the
+  current rules gives the same outcomes.
+- Demo video narration: ElevenLabs text-to-speech in the founder's own cloned voice. It is video production only and
+  not part of the product.
+- Development used Claude and Codex. The event's [coding-assistant clarification](https://discord.com/channels/1557169028080869426/1566625461319106610/1566625482143699178)
+  permits those development tools; runtime model calls must use Meta models.
 - All demo data is synthetic and labelled as such. Ledgerline is a demo, not tax or legal advice. VAT rules cover the
   German and intra-EU cases in the sample batch.
 
 ## License
 
 MIT, see [LICENSE](LICENSE). Muse Spark Open weights are distributed by Meta under the Muse Model License.
+
+**Built with Muse Spark Open.**

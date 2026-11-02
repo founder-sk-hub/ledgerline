@@ -181,13 +181,11 @@ def evaluate(st: dict) -> dict | None:
         tp += len(expected & got)
         fp += len(got - expected)
         fn += len(expected - got)
-        caught = bool(expected) == bool(got - {"CONTRACT_PRICE_CHANGE"} or (expected & got))
         decision_ok = d["final_status"] == t["decision"] or (t["decision"] in OPEN_STATUSES
                                                               and d["final_status"] in OPEN_STATUSES)
         decisions_ok += decision_ok
         rows.append({"filename": d["filename"], "expected_flags": sorted(expected), "flags": sorted(got),
-                     "expected_decision": t["decision"], "decision": d["final_status"], "decision_ok": decision_ok,
-                     "caught": caught})
+                     "expected_decision": t["decision"], "decision": d["final_status"], "decision_ok": decision_ok})
     present = {r["filename"] for r in rows}  # subset runs are scored on the documents they contain
     planted = sum(1 for f, t in truth.items() if f in present and t["flags"] and t["decision"] in OPEN_STATUSES)
     caught_docs = sum(1 for r in rows if r["expected_decision"] in OPEN_STATUSES and r["decision"] in OPEN_STATUSES)

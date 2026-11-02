@@ -13,17 +13,17 @@ export default function Metrics({ state, runs }: { state: RunState; runs: RunSum
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Stat
-          label="Time saved"
+          label="Estimated time saved"
           value={`${Math.round(m.minutes_saved)} min`}
-          sub={`vs ${Math.round(m.manual_minutes)} min manual; ${m.human_review_minutes} min human review`}
+          sub={`Assumed: ${Math.round(m.manual_minutes)} min manual; ${m.human_review_minutes} min review`}
           tone="brand"
         />
-        <Stat label="EUR at risk caught" value={eur(m.eur_at_risk, 0)} sub={`${m.flagged_documents} of ${m.documents} documents stopped`} tone="gold" />
+        <Stat label="EUR at risk caught" value={eur(m.eur_at_risk, 0)} sub={`${m.flagged_documents} of ${m.documents} held, rejected or escalated`} tone="gold" />
         <Stat label="Agent wall time" value={`${Math.round(m.wall_seconds)}s`} sub={`${m.documents} documents, end to end`} />
         <Stat label="Model cost" value={usd(m.cost_usd)} sub={`${usd(m.cost_usd / Math.max(m.documents, 1))} per document`} />
         <Stat label="Latency" value={secs(m.avg_latency_ms)} sub={`avg per call · p95 ${secs(m.p95_latency_ms)}`} />
         <Stat
-          label="Verified"
+          label="Model-confirmed"
           value={`${m.verifier_confirmed}/${m.verified}`}
           sub={`${m.verifier_escalations} escalated by verifier · avg conf. ${m.avg_verifier_confidence != null ? Math.round(m.avg_verifier_confidence * 100) + "%" : "–"}`}
         />
@@ -167,7 +167,7 @@ export default function Metrics({ state, runs }: { state: RunState; runs: RunSum
         </Card>
         <Card className="p-4">
           <div className="text-sm font-semibold">Standard vs. private mode</div>
-          <div className="text-xs text-muted">Same agent, same batch. Muse Spark on Meta Model API vs. Muse Spark Open (open weights).</div>
+          <div className="text-xs text-muted">Recorded runs may use different document subsets. Compare document counts before interpreting cost or accuracy.</div>
           <table className="mt-2 w-full text-xs">
             <thead className="text-left text-muted">
               <tr className="border-b border-line">

@@ -1,13 +1,12 @@
 {
-  "voice": "Sinda (the founder's own cloned ElevenLabs voice)",
-  "voice_id": "QxZrXQWZH4J0HPT7XSaC",
+  "voice": "the founder's own cloned ElevenLabs voice (voice id from ELEVENLABS_VOICE_ID in .env)",
   "model": "eleven_multilingual_v2",
   "out": "v2",
   "note": "Narration for the demo video only; not part of the product. Numbers come from the recorded live run.",
   "lines": [
     {
       "id": "hook",
-      "text": "Hi, I'm Sinda, a founder from Rothenburg ob der Tauber. Every month, small businesses like a local coffee roaster get a pile of bills: PDFs, phone photos, emails, even voice notes from staff. Checking them takes a day, and mistakes cost real money."
+      "text": "Hi, I'm Sinda, a founder from Rothenburg ob der Tauber. Every month, small food businesses get a pile of supplier bills: PDFs, phone photos, emails, even voice notes from staff. Checking them takes hours, and mistakes cost real money."
     },
     {
       "id": "intro",
@@ -43,7 +42,7 @@
     },
     {
       "id": "close",
-      "text": "This month: thirty-two documents, twelve problems caught, over eight thousand euros protected, in six minutes, for about one euro of AI."
+      "text": "In this demo month: thirty-two documents, all twelve planted problems stopped, over eight thousand euros flagged at risk, in six minutes, for about one euro of AI."
     },
     {
       "id": "end",

@@ -35,6 +35,9 @@ export const FLAG_LABEL: Record<string, string> = {
   OTHER: "Other",
 };
 
+/** "Muse Spark", "Muse Glimmer", ... from a provider label such as "Muse Glimmer · on this machine (Ollama)". */
+export const modelName = (p?: Provider | null) => (p?.label ?? "the model").split(" · ")[0];
+
 export function StatusChip({ status, size = "sm" }: { status: string | null; size?: "sm" | "md" }) {
   if (!status) return null;
   const s = STATUS[status] ?? STATUS.file;
@@ -117,7 +120,7 @@ export function Logo() {
       </svg>
       <div className="leading-tight">
         <div className="text-[15px] font-semibold tracking-tight">Ledgerline</div>
-        <div className="text-[11px] text-muted">verifiable back-office agent</div>
+        <div className="text-[11px] text-muted">invoice & delivery review</div>
       </div>
     </div>
   );

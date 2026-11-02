@@ -1,7 +1,8 @@
-"""Model providers. Both are Meta models behind OpenAI-compatible endpoints:
+"""Model providers, all Meta models behind OpenAI-compatible endpoints:
 
 * meta    -> Muse Spark 1.3 on Meta Model API (api.meta.ai/v1)
 * private -> Muse Spark Open (open weights) on Baseten, or any self-hosted OpenAI-compatible server
+* local   -> Muse Glimmer (open weights) on this machine through Ollama
 """
 
 from __future__ import annotations
@@ -89,10 +90,11 @@ class Provider:
 
         delay = 1.0
         for attempt in range(5):
-            t0 = time.perf_counter()
             try:
                 async with self.sem:
+                    t0 = time.perf_counter()  # model time only, not time spent queued behind the semaphore
                     resp = await self.client.chat.completions.create(**kwargs)
+                    latency = int((time.perf_counter() - t0) * 1000)
             except (openai.RateLimitError, openai.APITimeoutError, openai.APIConnectionError,
                     openai.InternalServerError) as e:
                 if attempt == 4:
@@ -116,7 +118,6 @@ class Provider:
                 raise ProviderError(f"BadRequest: {e}") from e
             except openai.APIStatusError as e:
                 raise ProviderError(f"HTTP {e.status_code}: {e}") from e
-            latency = int((time.perf_counter() - t0) * 1000)
             usage = _usage(resp.usage)
             if not resp.choices:
                 raise ProviderError("empty response (no choices)")
@@ -211,14 +212,17 @@ class MetaMedia:
         req = {"model": self.asr_model, "audioEncoding": "WAV", "mode": "ENDPOINTING",
                "languageBias": languages, "keywords": keywords[:50]}
         t0 = time.perf_counter()
-        async with httpx.AsyncClient(timeout=180) as c:
-            r = await c.post(f"{self.base_url}/asr/transcribe",
-                             headers={"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"},
-                             files={"request": (None, json.dumps(req), "application/json"),
-                                    "audio": ("memo.wav", wav, "audio/wav")})
-        if r.status_code != 200:
-            raise ProviderError(f"transcribe HTTP {r.status_code}: {r.text[:300]}")
-        data = r.json()
+        try:
+            async with httpx.AsyncClient(timeout=180) as c:
+                r = await c.post(f"{self.base_url}/asr/transcribe",
+                                 headers={"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"},
+                                 files={"request": (None, json.dumps(req), "application/json"),
+                                        "audio": ("memo.wav", wav, "audio/wav")})
+            if r.status_code != 200:
+                raise ProviderError(f"transcribe HTTP {r.status_code}: {r.text[:300]}")
+            data = r.json()
+        except (httpx.HTTPError, ValueError) as e:
+            raise ProviderError(f"transcribe failed: {e}") from e
         cost = data.get("audioDurationMs", 0) / 3_600_000 * self.prices["asr_per_hour"]
         return MediaResult(data, int((time.perf_counter() - t0) * 1000), cost, self.asr_model)
 
@@ -233,6 +237,21 @@ class MetaMedia:
             {"type": "input_image", "image_url": "data:image/jpeg;base64," + base64.b64encode(jpeg).decode()}]}]}
         text = ""
         t0 = time.perf_counter()
+        try:
+            text = await self._segment_stream(body)
+        except (httpx.HTTPError, ValueError) as e:
+            raise ProviderError(f"segment failed: {e}") from e
+        boxes = []
+        for x1, y1, x2, y2, w, h in BOX.findall(text):
+            x1, y1, x2, y2, w, h = map(int, (x1, y1, x2, y2, w, h))
+            boxes.append([round(x1 * 1000 / w), round(y1 * 1000 / h), round(x2 * 1000 / w), round(y2 * 1000 / h)])
+        return MediaResult({"phrase": phrase, "count": len(boxes), "boxes": boxes},
+                           int((time.perf_counter() - t0) * 1000), self.prices["sam_per_image"], self.sam_model)
+
+    async def _segment_stream(self, body: dict) -> str:
+        import httpx
+
+        text = ""
         async with httpx.AsyncClient(timeout=180) as c:
             async with c.stream("POST", f"{self.base_url}/responses", json=body,
                                 headers={"Authorization": f"Bearer {self.api_key}", "Accept": "text/event-stream"}) as r:
@@ -246,9 +265,4 @@ class MetaMedia:
                         text += ev.get("delta", "")
                     elif ev.get("type") == "error":
                         raise ProviderError(f"segment error: {ev}")
-        boxes = []
-        for x1, y1, x2, y2, w, h in BOX.findall(text):
-            x1, y1, x2, y2, w, h = map(int, (x1, y1, x2, y2, w, h))
-            boxes.append([round(x1 * 1000 / w), round(y1 * 1000 / h), round(x2 * 1000 / w), round(y2 * 1000 / h)])
-        return MediaResult({"phrase": phrase, "count": len(boxes), "boxes": boxes},
-                           int((time.perf_counter() - t0) * 1000), self.prices["sam_per_image"], self.sam_model)
+        return text

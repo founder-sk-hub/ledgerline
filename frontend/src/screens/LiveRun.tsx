@@ -65,7 +65,7 @@ export default function LiveRun({ state, events }: { state: RunState; events: Ru
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Stat label="Documents read" value={`${read}/${state.docs.length}`} sub={`${decided} decided`} />
-        <Stat label="EUR at risk caught" value={eur(m.eur_at_risk, 0)} sub={`${m.flagged_documents} documents stopped`} tone="gold" />
+        <Stat label="EUR at risk caught" value={eur(m.eur_at_risk, 0)} sub={`${m.flagged_documents} held, rejected or escalated`} tone="gold" />
         <Stat label="Payment batch" value={eur(m.eur_payment_batch, 0)} sub={`${m.payments} payments drafted`} />
         <Stat label="Model calls" value={int(m.llm_calls)} sub={`${int(m.input_tokens + m.output_tokens)} tokens`} />
         <Stat label="Model cost" value={usd(m.cost_usd)} sub={m.processed ? `${usd(m.cost_usd / Math.max(m.processed, 1))} per document` : "–"} />
@@ -261,7 +261,7 @@ function TimelineRow({ e, doc, provider }: { e: RunEvent; doc?: string; provider
         <>
           <span className="mr-1 rounded bg-meta px-1 font-mono text-[10px] text-white">{p.method}</span>
           segmented and counted <span className="font-semibold">{p.count} × “{p.object}”</span>
-          {p.model_estimate ? <span className="text-muted"> (Muse Spark's own estimate: {p.model_estimate})</span> : null}
+          {p.model_estimate ? <span className="text-muted"> (the reading model's own estimate: {p.model_estimate})</span> : null}
         </>
       );
       break;
@@ -303,10 +303,14 @@ function TimelineRow({ e, doc, provider }: { e: RunEvent; doc?: string; provider
     case "decision.verified":
       icon = <CheckCircle2 size={13} className={p.escalated ? "text-escalate" : "text-approve"} />;
       body = p.escalated ? (
-        <span className="text-escalate">Verifier escalated to a human: {p.reason}</span>
+        <span className="text-escalate">Second pass escalated to a human: {p.reason}</span>
+      ) : p.verdict === "skipped" ? (
+        <span className="text-muted">No second pass needed ({p.notes || "nothing to check"})</span>
+      ) : p.verdict === "disputed" ? (
+        <span className="text-escalate">Second pass disputed it; already with a human</span>
       ) : (
         <>
-          Verified against source ({p.claims?.length ?? 0} claims, confidence {Math.round((p.overall_confidence ?? 0) * 100)}%)
+          Second pass confirmed it against the source ({p.claims?.length ?? 0} claims, confidence {Math.round((p.overall_confidence ?? 0) * 100)}%)
         </>
       );
       break;

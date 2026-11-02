@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Bot, CheckCircle2, ChevronRight, Cpu, Download, FileSearch, Mic, ScanSearch, ShieldCheck, Wrench, XCircle } from "lucide-react";
 import { api, fileUrl, pageUrl, type RunDoc, type RunState, type Step } from "../api";
 import { go } from "../App";
-import { Card, Empty, FlagChip, KindIcon, StatusChip, eur, int, secs, usd } from "../components/ui";
+import { Card, Empty, FlagChip, KindIcon, StatusChip, eur, int, modelName, secs, usd } from "../components/ui";
 
 const FILTERS = ["all", "stopped", "approve", "file"] as const;
 
@@ -90,7 +90,7 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
           <div className="space-y-3 p-4">
             <audio controls src={fileUrl(d.doc_id)} className="w-full" />
             <div className="flex items-center gap-1.5 text-xs font-medium text-meta">
-              <Mic size={13} /> Transcribed by Muse Voice Transcribe
+              <Mic size={13} /> {ex?.transcript ? "Transcribed by Muse Voice Transcribe" : "Not transcribed"}
             </div>
             <p className="rounded-lg bg-paper p-3 text-sm leading-relaxed">{ex?.transcript ?? "Not transcribed (private engines don't send audio to Meta)."}</p>
             {(ex?.received_items?.length ?? 0) > 0 && (
@@ -140,13 +140,13 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
             <ScanSearch size={14} className="text-amber-700" />
             <span>
               <span className="font-semibold">{ex.counted.method ?? "Model"} counted {ex.counted.count} × “{ex.counted.object}”</span>
-              {ex.counted.method ? ` (Muse Spark chose what to count; its own estimate was ${ex.counted.model_estimate ?? "–"})` : ""}
+              {ex.counted.method ? ` (${modelName(state.run.provider)} chose what to count; its own estimate was ${ex.counted.model_estimate ?? "–"})` : ""}
             </span>
           </div>
         )}
         {boxes.length > 0 && (
           <div className="border-t border-line px-4 py-2 text-[11px] text-muted">
-            Boxes: evidence located by the verifier (Muse Spark grounding, 0–1000 grid). Green = supported, red = not supported.
+            Boxes: evidence located by the second-pass review ({modelName(state.run.provider)} grounding, 0–1000 grid). Green = supported, red = not supported.
           </div>
         )}
       </Card>
@@ -194,7 +194,7 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
           <Card className="p-4">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className={ver.escalated ? "text-escalate" : "text-approve"} />
-              <div className="text-sm font-semibold">Independent verification</div>
+              <div className="text-sm font-semibold">Second-pass review</div>
               <span className="text-xs text-muted">
                 {ver.verdict} · confidence {Math.round(ver.overall_confidence * 100)}%
               </span>
@@ -228,7 +228,7 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
           </Card>
         )}
 
-        {ex && <ExtractionCard d={d} />}
+        {ex && <ExtractionCard d={d} model={modelName(state.run.provider)} />}
 
         <Card className="p-4">
           <div className="mb-2 text-sm font-semibold">Step-by-step audit trail</div>
@@ -245,7 +245,7 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
 
 const clamp = (n: number) => Math.min(Math.max(n, 0), 1000);
 
-function ExtractionCard({ d }: { d: RunDoc }) {
+function ExtractionCard({ d, model }: { d: RunDoc; model: string }) {
   const ex = d.extraction!;
   const rows: [string, string | undefined][] = [
     ["Type", ex.doc_type],
@@ -261,7 +261,7 @@ function ExtractionCard({ d }: { d: RunDoc }) {
     <Card className="p-4">
       <div className="mb-2 flex items-center gap-2">
         <FileSearch size={15} className="text-brand" />
-        <div className="text-sm font-semibold">What Muse Spark read</div>
+        <div className="text-sm font-semibold">What {model} read</div>
         <span className="text-xs text-muted">confidence {Math.round((ex.confidence ?? 0) * 100)}%</span>
       </div>
       <dl className="grid grid-cols-[90px_1fr] gap-x-3 gap-y-1 text-xs">
