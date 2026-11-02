@@ -34,6 +34,7 @@ PRICES = {
     "muse-wonder-1.0": {"input": 4.00, "cached": 0.20, "output": 20.00},
     "meta-models/muse-spark-open": {"input": 1.25, "cached": 0.15, "output": 4.25},
     "meta-models/muse-spark-open-1026": {"input": 1.25, "cached": 0.15, "output": 4.25},
+    "muse-glimmer:30b-mlx": {"input": 0.0, "cached": 0.0, "output": 0.0},  # runs locally
 }
 DEFAULT_PRICE = {"input": 1.25, "cached": 0.15, "output": 4.25}
 
@@ -50,16 +51,35 @@ class ProviderConfig:
     structured: str  # "json_schema" | "tool"
     reasoning_effort: bool  # whether to send reasoning_effort
     open_weights: bool
+    local: bool = False  # runs on this machine: no document leaves it
 
     @property
     def available(self) -> bool:
-        return bool(self.api_key)
+        return local_model_ready(self.model) if self.local else bool(self.api_key)
+
+    @property
+    def media(self) -> bool:
+        """Voice transcription and SAM 3.1 run on Meta Model API; private engines don't send media there."""
+        return self.key == "meta"
 
     def public(self) -> dict:
         return {
             "key": self.key, "label": self.label, "badge": self.badge, "model": self.model,
             "base_url": self.base_url, "available": self.available, "open_weights": self.open_weights,
+            "local": self.local, "media": self.media,
         }
+
+
+def local_model_ready(model: str) -> bool:
+    """True when an Ollama server is up and has the model pulled."""
+    import httpx
+
+    try:
+        tags = httpx.get(_env("LOCAL_BASE_URL", "http://127.0.0.1:11434/v1").rsplit("/v1", 1)[0] + "/api/tags",
+                         timeout=0.5).json()
+    except (httpx.HTTPError, ValueError):
+        return False
+    return any(m.get("name") == model or m.get("model") == model for m in tags.get("models", []))
 
 
 def providers() -> dict[str, ProviderConfig]:
@@ -90,11 +110,28 @@ def providers() -> dict[str, ProviderConfig]:
             reasoning_effort=_env("PRIVATE_REASONING_EFFORT", "0") == "1",
             open_weights=True,
         ),
+        "local": ProviderConfig(
+            key="local",
+            label="Muse Glimmer · on this machine (Ollama)",
+            badge=_env("LOCAL_MODEL", "muse-glimmer:30b-mlx").split(":")[0],
+            base_url=_env("LOCAL_BASE_URL", "http://127.0.0.1:11434/v1"),
+            model=_env("LOCAL_MODEL", "muse-glimmer:30b-mlx"),
+            api_key="ollama",  # Ollama needs no key; the OpenAI client wants a non-empty string
+            developer_role="system",
+            structured="json_schema",
+            reasoning_effort=False,
+            open_weights=True,
+            local=True,
+        ),
     }
 
 
 MODE = _env("LEDGERLINE_MODE", "replay")  # replay | live
 MAX_CONCURRENCY = int(_env("LEDGERLINE_CONCURRENCY", "6"))
+LOCAL_CONCURRENCY = int(_env("LOCAL_CONCURRENCY", "1"))
+ASR_MODEL = _env("ASR_MODEL", "muse-voice-transcribe-1.0")
+SAM_MODEL = _env("SAM_MODEL", "sam-3.1")
+MEDIA_PRICES = {"asr_per_hour": 0.18, "sam_per_image": 0.0025}
 # Local spend guard: live runs are refused once recorded spend reaches this many USD.
 BUDGET_USD = float(_env("LEDGERLINE_BUDGET_USD", "40"))
 

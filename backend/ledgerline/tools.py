@@ -19,6 +19,7 @@ from .config import POLICY
 EU = {"AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU",
       "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"}
 PAYABLE = {"invoice", "credit_note", "reminder"}
+EVIDENCE_TYPES = {"receiving_note", "delivery_photo"}
 FULL_AMOUNT_CODES = {"DUPLICATE", "BANK_DETAILS_CHANGED", "SENDER_DOMAIN_MISMATCH", "UNKNOWN_VENDOR", "MISSING_PO"}
 INFO_CODES = {"CONTRACT_PRICE_CHANGE"}
 LEGAL_SUFFIX = re.compile(r"\b(gmbh|eg|ug|b\.?v\.?|ltd|limited|ag|kg|ohg|e\.?k\.?|inc|co|haftungsbeschränkt)\b\.?", re.I)
@@ -92,7 +93,7 @@ def norm_period(s: str | None) -> str:
         if re.search(rf"\b{name}\b", s):
             y = re.search(r"(20\d\d)", s)
             return f"{y.group(1) if y else ''}-{n:02d}"
-    m = re.search(r"(kw|week|cw)\s*(\d{1,2})", s)
+    m = re.search(r"(kw|kalenderwoche|woche|week|cw)\.?\s*(\d{1,2})", s)
     if m:
         return f"w{int(m.group(2))}"
     return re.sub(r"[^0-9a-z]", "", s)
@@ -513,6 +514,101 @@ def detect_duplicate(books: Books, doc_id: str) -> dict:
     return out
 
 
+# ---------------------------------------------------------------- check_goods_receipt
+def _evidence_link(books: Books, inv_id: str, ev_id: str) -> str:
+    """Why a piece of receiving evidence belongs to an invoice ("" if it doesn't)."""
+    inv, ev = books.extractions[inv_id], books.extractions[ev_id]
+    ref = norm_id(ev.get("reference"))
+    if ref:
+        for key in ("invoice_number", "po_number"):
+            if norm_id(inv.get(key)) and norm_id(inv.get(key)) in ref:
+                return f"it references {inv.get(key)}"
+    iv, _ = match_vendor(books, inv, books.docs.get(inv_id))
+    ev_v, _ = match_vendor(books, ev, books.docs.get(ev_id))
+    if iv and ev_v and iv["vendor_id"] == ev_v["vendor_id"]:
+        ip, ep = norm_period(inv.get("service_period")), norm_period(ev.get("service_period") or ev.get("reference"))
+        if ip and ip == ep:
+            return f"same vendor and delivery period ({inv.get('service_period')})"
+    return ""
+
+
+def _po_line_for(books: Books, inv: dict, line: dict) -> dict | None:
+    po = next((p for p in books.purchase_orders if norm_id(p["po_number"]) == norm_id(inv.get("po_number"))), None)
+    return _best_line(line.get("description", ""), po["lines"], "description")[0] if po else None
+
+
+def _received(ev: dict, line: dict, po_line: dict | None) -> tuple[float, str] | None:
+    pack = (po_line or {}).get("pack") or {}
+    if ev.get("doc_type") == "receiving_note":
+        items = ev.get("received_items") or []
+        item = items[0] if len(items) == 1 else _best_line(line.get("description", ""), [
+            {**i, "keywords": []} for i in items], "description")[0]
+        if not item:
+            return None
+        qty, unit = num(item.get("quantity")), str(item.get("unit") or "")
+        if pack and any(k in unit.lower() for k in (pack["name"], "kanne", "sack", "bag", "can")):
+            qty *= pack["size"]
+        return qty, f"staff note / voice memo: {num(item.get('quantity')):g} {unit}".strip()
+    if ev.get("doc_type") == "delivery_photo":
+        counted = ev.get("counted") or {}
+        n = counted.get("count", num(ev.get("counted_items")))
+        size = num(ev.get("unit_size")) or pack.get("size", 0)
+        if not n or not size:
+            return None
+        how = f"{counted.get('method')} segmentation" if counted.get("method") else "visual count"
+        return n * size, f"{n:g} x {size:g} counted in the delivery photo ({how})"
+    return None
+
+
+def check_goods_receipt(books: Books, doc_id: str) -> dict:
+    """Three-way match: compare invoiced quantities with what staff recorded as actually received."""
+    ex = books.extractions[doc_id]
+    out: dict[str, Any] = {"doc_id": doc_id, "evidence": []}
+    if ex.get("doc_type") in EVIDENCE_TYPES:
+        links = [{"invoice": books.extractions[i].get("invoice_number"), "why": why}
+                 for i in books.extractions if i != doc_id and books.extractions[i].get("doc_type") == "invoice"
+                 and (why := _evidence_link(books, i, doc_id))]
+        out["note"] = "This document is goods-receipt evidence." + ("" if links else " No matching invoice found yet.")
+        out["applies_to"] = links
+        out["issues"] = []
+        return out
+    if ex.get("doc_type") != "invoice":
+        out["note"] = f"{ex.get('doc_type')}: no goods receipt to check"
+        out["issues"] = []
+        return out
+    issues = []
+    for ev_id, ev in books.extractions.items():
+        if ev_id == doc_id or ev.get("doc_type") not in EVIDENCE_TYPES | {"delivery_note"}:
+            continue
+        why = _evidence_link(books, doc_id, ev_id)
+        if not why:
+            continue
+        src = books.docs.get(ev_id, {}).get("filename", ev_id)
+        if ev.get("doc_type") == "delivery_note":
+            out["evidence"].append({"document": src, "why": why, "note": "supplier's own delivery note (not proof of receipt)"})
+            continue
+        for line in ex.get("lines", []):
+            po_line = _po_line_for(books, ex, line)
+            got = _received(ev, line, po_line)
+            if not got:
+                continue
+            received, how = got
+            billed, price, rate = num(line.get("quantity")), num(line.get("unit_price")), num(line.get("vat_rate"))
+            row = {"document": src, "why": why, "line": line.get("description"), "invoiced": billed,
+                   "received": received, "how": how}
+            out["evidence"].append(row)
+            if received < billed - max(0.005 * billed, 0.01):
+                missing = billed - received
+                issues.append(issue("SHORT_DELIVERY", f"Invoice bills {billed:g} {line.get('unit') or ''} of "
+                                    f"'{line.get('description')}', but {src} shows only {received:g} received ({how}).",
+                                    missing * price * (1 + rate / 100), invoiced=billed, received=received,
+                                    missing=missing, evidence=src))
+    if not out["evidence"]:
+        out["note"] = "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in the batch."
+    out["issues"] = issues
+    return out
+
+
 # ---------------------------------------------------------------- tool schemas (OpenAI function format)
 def fn(name: str, description: str, properties: dict, required: list[str]) -> dict:
     return {"type": "function", "function": {"name": name, "description": description, "parameters": {
@@ -520,7 +616,7 @@ def fn(name: str, description: str, properties: dict, required: list[str]) -> di
 
 
 DOC = {"doc_id": {"type": "string", "description": "The document id being reviewed."}}
-FLAG_CODES = ["DUPLICATE", "PRICE_DRIFT", "QTY_EXCEEDS_PO", "MISSING_PO", "VAT_RATE", "VAT_ARITHMETIC", "ARITHMETIC",
+FLAG_CODES = ["DUPLICATE", "PRICE_DRIFT", "QTY_EXCEEDS_PO", "SHORT_DELIVERY", "MISSING_PO", "VAT_RATE", "VAT_ARITHMETIC", "ARITHMETIC",
               "BANK_DETAILS_CHANGED", "SENDER_DOMAIN_MISMATCH", "UNKNOWN_VENDOR", "CONTRACT_PRICE_CHANGE", "OTHER"]
 DECISIONS = ["approve", "hold", "reject", "escalate", "file"]
 
@@ -535,6 +631,9 @@ INVESTIGATOR_TOOLS = [
        "(line totals, net, VAT, gross).", DOC, ["doc_id"]),
     fn("detect_duplicate", "Look for the same invoice in the paid history and among earlier documents in this batch.",
        DOC, ["doc_id"]),
+    fn("check_goods_receipt", "Three-way match: compare the invoiced quantities with goods-receipt evidence from "
+       "staff (delivery photos counted with SAM 3.1, transcribed voice memos). For a photo or voice memo, shows "
+       "which invoice it belongs to.", DOC, ["doc_id"]),
     fn("reread_document", "Ask a focused question about the original document image/text (e.g. 'What IBAN is printed "
        "in the footer?'). Use when a field is unclear or a tool result conflicts with the extraction.",
        {**DOC, "question": {"type": "string"}, "page": {"type": "integer", "description": "1-based page, optional"}},

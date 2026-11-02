@@ -72,6 +72,12 @@ def perfect_extraction(doc) -> dict:
                                 {"term": "Term", "value": "2027-01-01 to 2027-12-31"}]
     if doc.email:
         ex["sender_email"] = re.search(r"<(.+)>", doc.email["from"]).group(1)
+    if doc.kind == "receiving_note":
+        ex.update({"invoice_number": "", "issue_date": "2026-10-23", "service_period": "KW 43", "iban": "",
+                   "received_items": [{"description": "Vollmilch", "quantity": 280, "unit": "L"}]})
+    if doc.kind == "delivery_photo":
+        ex.update({"invoice_number": "", "issue_date": "2026-10-13", "reference": "RGC-1022", "iban": "",
+                   "count_target": "jute coffee sack", "unit_size": 60, "counted_items": 9})
     return ex
 
 
@@ -96,4 +102,6 @@ def books(sample_docs):
         meta = {"from": d.email["from"]} if d.email else {}
         b.docs[d.key] = {"doc_id": d.key, "idx": i, "filename": d.filename, "meta": meta}
         b.extractions[d.key] = perfect_extraction(d)
+        if d.kind == "delivery_photo":  # what intake adds after SAM 3.1 counts the sacks
+            b.extractions[d.key]["counted"] = {"object": "jute coffee sack", "count": 9, "method": "sam-3.1", "boxes": []}
     return b

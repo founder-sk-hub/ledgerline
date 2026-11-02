@@ -17,12 +17,13 @@ from sse_starlette.sse import EventSourceResponse
 
 from . import replay as replays
 from .agents import Run
-from .config import BUDGET_USD, FRONTEND_DIST, MAX_CONCURRENCY, MODE, RUNTIME, providers
+from .config import (ASR_MODEL, BUDGET_USD, FRONTEND_DIST, LOCAL_CONCURRENCY, MAX_CONCURRENCY, MEDIA_PRICES, MODE,
+                     RUNTIME, SAM_MODEL, providers)
 from .db import DB
 from .documents import document_text, load_sample_batch, page_images, register_file
 from .events import Bus
 from .execution import approval_items, build_execution, export_dir
-from .providers import Provider
+from .providers import MetaMedia, Provider
 from .state import evaluate, fold
 from .tools import Books
 
@@ -45,6 +46,11 @@ app = FastAPI(title="Ledgerline", lifespan=lifespan)
 def books() -> Books:
     return Books(buyer=db.buyer(), vendors=db.ref("vendor"), purchase_orders=db.ref("purchase_order"),
                  contracts=db.ref("contract"), history=db.ref("history"))
+
+
+def media() -> MetaMedia | None:
+    meta = providers()["meta"]
+    return MetaMedia(meta.base_url, meta.api_key, ASR_MODEL, SAM_MODEL, MEDIA_PRICES) if meta.available else None
 
 
 def live_enabled() -> bool:
@@ -167,7 +173,8 @@ async def start_run(req: RunRequest):
     db.create_run(run_id, req.batch_id, req.provider, "live")
     b = books()
     b.docs = {d["doc_id"]: d for d in docs}
-    run = Run(run_id, db, bus, Provider(cfg, MAX_CONCURRENCY), b, docs)
+    run = Run(run_id, db, bus, Provider(cfg, LOCAL_CONCURRENCY if cfg.local else MAX_CONCURRENCY), b, docs,
+              media=media())
     tasks[run_id] = asyncio.create_task(_guard(run.execute()))
     return {"run_id": run_id, "mode": "live"}
 

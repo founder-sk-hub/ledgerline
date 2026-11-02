@@ -29,6 +29,17 @@ export default function Metrics({ state, runs }: { state: RunState; runs: RunSum
         />
       </div>
 
+      {m.models.length > 0 && (
+        <Card className="flex flex-wrap items-center gap-2 p-4">
+          <div className="mr-2 text-sm font-semibold">Meta models used in this run</div>
+          {m.models.map((x) => (
+            <span key={x} className="rounded-full bg-[#eef3ff] px-2.5 py-1 font-mono text-xs text-meta">
+              {x}
+            </span>
+          ))}
+        </Card>
+      )}
+
       <div className="grid gap-5 lg:grid-cols-2">
         <Card className="p-4">
           <div className="text-sm font-semibold">What it caught</div>

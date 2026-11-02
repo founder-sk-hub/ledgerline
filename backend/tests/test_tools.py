@@ -2,9 +2,11 @@
 
 import pytest
 
-from ledgerline.tools import check_vat, combine_at_risk, compare_to_po, detect_duplicate, doc_gross, lookup_vendor
+from ledgerline.tools import (check_goods_receipt, check_vat, combine_at_risk, compare_to_po, detect_duplicate,
+                             doc_gross, lookup_vendor)
 
-TOOLS = (lookup_vendor, compare_to_po, check_vat, detect_duplicate)
+TOOLS = (lookup_vendor, compare_to_po, check_vat, detect_duplicate, check_goods_receipt)
+KEYS = [f"D{i:02d}" for i in range(1, 33)]
 
 
 def run_all(books, key):
@@ -14,13 +16,13 @@ def run_all(books, key):
     return issues
 
 
-@pytest.mark.parametrize("key", [f"D{i:02d}" for i in range(1, 31)])
+@pytest.mark.parametrize("key", KEYS)
 def test_planted_flags(books, truth, key):
     issues = run_all(books, key)
     assert {i["code"] for i in issues} == set(truth[key]["flags"]), [i["message"] for i in issues]
 
 
-@pytest.mark.parametrize("key", [k for k in (f"D{i:02d}" for i in range(1, 31))])
+@pytest.mark.parametrize("key", KEYS)
 def test_at_risk_matches_ground_truth(books, truth, key):
     t = truth[key]
     if "at_risk" not in t:
@@ -51,3 +53,14 @@ def test_po_consumption_skips_duplicates(books):
     row = out["lines"][0]
     assert row["already_invoiced"] == 10000  # D05 counted once, D06 (copy) ignored
     assert out["issues"][0]["details"]["excess"] == 2000
+
+
+def test_three_way_match(books):
+    milk = check_goods_receipt(books, "D03")
+    assert milk["issues"][0]["details"]["received"] == 280
+    photo = check_goods_receipt(books, "D07")["issues"][0]
+    assert photo["details"]["received"] == 540 and photo["at_risk_eur"] == 426.0
+    # the other Colombia invoice and the next milk week are not touched by that evidence
+    assert check_goods_receipt(books, "D08")["issues"] == []
+    assert check_goods_receipt(books, "D04")["issues"] == []
+    assert check_goods_receipt(books, "D32")["applies_to"][0]["invoice"] == "RGC-1022"

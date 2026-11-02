@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FileText, Image as ImageIcon, Mail, Lock, Cloud } from "lucide-react";
+import { FileText, Image as ImageIcon, Mail, Lock, Cloud, Mic, Laptop } from "lucide-react";
 import type { Provider } from "../api";
 
 export const eur = (n: number | null | undefined, digits = 2) =>
@@ -23,6 +23,7 @@ export const FLAG_LABEL: Record<string, string> = {
   DUPLICATE: "Duplicate",
   PRICE_DRIFT: "Price drift",
   QTY_EXCEEDS_PO: "Over PO quantity",
+  SHORT_DELIVERY: "Short delivery",
   MISSING_PO: "Missing PO",
   VAT_RATE: "Wrong VAT rate",
   VAT_ARITHMETIC: "VAT math",
@@ -73,7 +74,7 @@ export function ProviderBadge({ provider, compact }: { provider?: Provider | nul
       }`}
       title={`${provider.label} · ${provider.model}`}
     >
-      {open ? <Lock size={12} /> : <Cloud size={12} />}
+      {provider.local ? <Laptop size={12} /> : open ? <Lock size={12} /> : <Cloud size={12} />}
       {compact ? provider.badge : provider.label}
     </span>
   );
@@ -81,6 +82,7 @@ export function ProviderBadge({ provider, compact }: { provider?: Provider | nul
 
 export function KindIcon({ kind, size = 14 }: { kind: string; size?: number }) {
   if (kind === "email") return <Mail size={size} />;
+  if (kind === "audio") return <Mic size={size} />;
   if (kind === "image") return <ImageIcon size={size} />;
   return <FileText size={size} />;
 }

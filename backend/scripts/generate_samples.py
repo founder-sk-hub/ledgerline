@@ -18,6 +18,7 @@ import json
 import math
 import random
 import shutil
+import subprocess
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from email.message import EmailMessage
@@ -141,7 +142,7 @@ PURCHASE_ORDERS = [
         "po_number": "PO-2026-101", "vendor_id": "V001", "issue_date": "2026-10-05", "status": "open",
         "lines": [
             {"line": 1, "description": "Brazil Santos NY2 17/18 green coffee", "keywords": ["santos", "brazil", "brasilien"],
-             "quantity": 600, "unit": "kg", "unit_price": 6.80, "vat_category": "food"},
+             "quantity": 600, "unit": "kg", "unit_price": 6.80, "vat_category": "food", "pack": {"name": "sack", "size": 60}},
             {"line": 2, "description": "Ethiopia Yirgacheffe G2 green coffee", "keywords": ["yirgacheffe", "ethiopia", "äthiopien"],
              "quantity": 400, "unit": "kg", "unit_price": 9.40, "vat_category": "food"},
         ],
@@ -159,7 +160,7 @@ PURCHASE_ORDERS = [
         "po_number": "PO-2026-103", "vendor_id": "V004", "issue_date": "2026-09-28", "status": "open",
         "lines": [
             {"line": 1, "description": "Colombia Supremo 17/18 green coffee", "keywords": ["colombia", "supremo", "kolumbien"],
-             "quantity": 1200, "unit": "kg", "unit_price": 7.10, "vat_category": "food"},
+             "quantity": 1200, "unit": "kg", "unit_price": 7.10, "vat_category": "food", "pack": {"name": "sack", "size": 60}},
         ],
     },
     {
@@ -167,7 +168,7 @@ PURCHASE_ORDERS = [
         "note": "Standing order, 400 L per week, delivery weeks 42-45",
         "lines": [
             {"line": 1, "description": "Whole milk 3.5% (Vollmilch)", "keywords": ["vollmilch", "milch", "milk"],
-             "quantity": 1600, "unit": "L", "unit_price": 1.09, "vat_category": "food"},
+             "quantity": 1600, "unit": "L", "unit_price": 1.09, "vat_category": "food", "pack": {"name": "can", "size": 10}},
         ],
     },
     {
@@ -342,6 +343,7 @@ class Pdf(FPDF):
         self.fam = "LL" + family  # avoid clashing with fpdf's built-in core font names
         self.add_font(self.fam, "", str(FONTS / reg))
         self.add_font(self.fam, "B", str(FONTS / bold))
+        self.set_creation_date(datetime(2026, 10, 31, 12, 0, tzinfo=timezone.utc))
         self.add_page()
 
     def f(self, size, bold=False):
@@ -709,7 +711,8 @@ def build_docs() -> list[Doc]:
                    "note": "Unit price 10.53 vs PO 9.40 (+12.0%)"}),
         Doc("D03", "IMG_4471.jpg", "invoice", "photo", v2, style="classic", number="MH-77812", date="2026-10-23",
             po="PO-2026-104", period="KW 43", lines=[Line(milk_rc, 400, "L", 1.09, 7)],
-            truth={"type": "invoice", "decision": "approve", "flags": []}),
+            truth={"type": "invoice", "decision": "hold", "flags": ["SHORT_DELIVERY"], "at_risk": 139.96,
+                   "note": "Voice memo D31: only 280 L of 400 L arrived in KW 43"}),
         Doc("D04", "IMG_4502.jpg", "invoice", "photo", v2, style="classic", number="MH-77831", date="2026-10-30",
             po="PO-2026-104", period="KW 44", lines=[Line(milk_rc, 400, "L", 1.09, 19)],
             truth={"type": "invoice", "decision": "hold", "flags": ["VAT_RATE"], "at_risk": 52.32,
@@ -723,12 +726,13 @@ def build_docs() -> list[Doc]:
             truth={"type": "invoice", "decision": "reject", "flags": ["DUPLICATE"], "at_risk": 1011.50,
                    "note": "Same invoice as D05, re-sent as scan"}),
         Doc("D07", "RGC-1022.pdf", "invoice", "pdf", v4, lang="en", style="minimal", number="RGC-1022", date="2026-10-12",
-            po="PO-2026-103", lines=[Line("Colombia Supremo 17/18 green coffee, 70 kg bags", 600, "kg", 7.10, 0)],
+            po="PO-2026-103", lines=[Line("Colombia Supremo 17/18 green coffee, 60 kg bags", 600, "kg", 7.10, 0)],
             vat_note="VAT 0% - Intra-Community supply of goods, exempt under Art. 138 Directive 2006/112/EC. "
                      "Customer VAT ID DE318840527. Reverse charge: acquisition VAT due by the customer.",
-            truth={"type": "invoice", "decision": "approve", "flags": []}),
+            truth={"type": "invoice", "decision": "hold", "flags": ["SHORT_DELIVERY"], "at_risk": 426.00,
+                   "note": "Delivery photo D32: 9 sacks of 60 kg (540 kg) received, 600 kg invoiced"}),
         Doc("D08", "RGC-1047.pdf", "invoice", "pdf", v4, lang="en", style="minimal", number="RGC-1047", date="2026-10-27",
-            po="PO-2026-103", lines=[Line("Colombia Supremo 17/18 green coffee, 70 kg bags", 600, "kg", 7.10, 21)],
+            po="PO-2026-103", lines=[Line("Colombia Supremo 17/18 green coffee, 60 kg bags", 600, "kg", 7.10, 21)],
             truth={"type": "invoice", "decision": "hold", "flags": ["VAT_RATE"], "at_risk": 894.60,
                    "note": "Dutch 21% VAT charged on intra-EU B2B supply; should be 0% reverse charge"}),
         Doc("D09", "Fwd_ Rechnung Oktober.eml", "invoice", "email", v5, number="CT-2026-10", date="2026-10-31",
@@ -829,6 +833,12 @@ def build_docs() -> list[Doc]:
             truth={"type": "receipt", "decision": "file", "flags": [], "note": "Card-paid, mixed 7%/19% receipt"}),
         Doc("D30", "Newsletter PackWerk Herbstaktion.eml", "newsletter", "email", v3,
             truth={"type": "other", "decision": "file", "flags": []}),
+        Doc("D31", "Sprachmemo_Tom_Filiale-Mitte.wav", "receiving_note", "audio", v2,
+            truth={"type": "receiving_note", "decision": "file", "flags": [],
+                   "note": "Branch manager's voice memo: KW 43 milk delivery short (28 of 40 cans)"}),
+        Doc("D32", "Wareneingang_RGC_13-10.jpg", "delivery_photo", "generated_photo", v4,
+            truth={"type": "delivery_photo", "decision": "file", "flags": [],
+                   "note": "Photo of the RGC-1022 delivery: 9 sacks (image generated with Muse Image)"}),
     ]
 
     # ---- email bodies
@@ -902,6 +912,39 @@ def build_docs() -> list[Doc]:
     return docs
 
 
+VOICE_MEMO = ("Hey, hier ist Tom aus der Filiale Mitte. Kurz wegen der Milch von der Molkerei Havelland, "
+              "Kalenderwoche dreiundvierzig. Da sind nur achtundzwanzig Kannen gekommen, statt vierzig. Also "
+              "zweihundertachtzig Liter statt vierhundert. Der Fahrer meinte, der Rest kommt nicht mehr. Bitte zahlt "
+              "nicht die volle Rechnung. Danke dir!")
+SOURCES = OUT / "sources"
+
+
+def write_voice_memo(path: Path) -> None:
+    """Synthetic voice memo via macOS text-to-speech (sample data only), as 24 kHz mono 16-bit WAV."""
+    cached = SOURCES / "voice_memo_tom.wav"
+    if not cached.exists():
+        aiff = OUT / ".tmp" / "memo.aiff"
+        subprocess.run(["say", "-v", "Eddy (German (Germany))", "-r", "175", "-o", str(aiff), VOICE_MEMO], check=True)
+        subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@24000", "-c", "1", str(aiff), str(cached)], check=True)
+    shutil.copy(cached, path)
+
+
+def write_delivery_photo(path: Path) -> None:
+    """Delivery photo generated once with Meta's Muse Image (data/samples/sources), plus a taped receiving note."""
+    img = Image.open(SOURCES / "delivery_rgc_muse_image.png").convert("RGB")
+    W, H = img.size
+    note = Image.new("RGB", (int(W * 0.25), int(H * 0.16)), (250, 246, 222))
+    d = ImageDraw.Draw(note)
+    fnt = _font(FONTS / "Bradley Hand Bold.ttf", int(H * 0.03))
+    for k, line in enumerate(["Wareneingang 13.10.", "RGC-1022 / Colombia", "gez. Tom"]):
+        d.text((int(W * 0.012), int(H * 0.015) + k * int(H * 0.042)), line, font=fnt, fill=(25, 35, 120))
+    note = note.rotate(4, expand=True, fillcolor=(0, 0, 0))
+    mask = note.convert("L").point(lambda v: 255 if v > 0 else 0)
+    img.paste(note, (int(W * 0.03), int(H * 0.06)), mask)
+    img.thumbnail((1600, 1600))
+    img.save(path, "JPEG", quality=84)
+
+
 def compute_truth_amounts(doc: Doc) -> dict:
     _, net, _, vat, gross = doc.totals() if doc.lines else (0, D(0), {}, D(0), D(0))
     return {"net": float(net), "vat": float(vat), "gross": float(gross)}
@@ -925,6 +968,10 @@ def main() -> None:
         target = BATCH / doc.filename
         if doc.fmt == "email":
             write_email(doc, target)
+        elif doc.fmt == "audio":
+            write_voice_memo(target)
+        elif doc.fmt == "generated_photo":
+            write_delivery_photo(target)
         elif doc.fmt == "pdf":
             render_pdf(doc, target)
         else:

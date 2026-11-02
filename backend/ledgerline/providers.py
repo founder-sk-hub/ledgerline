@@ -175,3 +175,71 @@ def structured_result(res: LLMResult, name: str) -> Any:
         if tc.function.name == name:
             return json.loads(tc.function.arguments or "{}")
     return parse_json_loose(res.text)
+
+
+# ---------------------------------------------------------------- media models on Meta Model API
+BOX = re.compile(r"<\|box;x1=(\d+);y1=(\d+);x2=(\d+);y2=(\d+);w=(\d+);h=(\d+)\|>")
+
+
+@dataclass
+class MediaResult:
+    data: dict
+    latency_ms: int
+    cost_usd: float
+    model: str
+
+
+class MetaMedia:
+    """Muse Voice Transcribe (speech to text) and SAM 3.1 (segmentation) on Meta Model API."""
+
+    def __init__(self, base_url: str, api_key: str, asr_model: str, sam_model: str, prices: dict):
+        self.base_url, self.api_key = base_url.rstrip("/"), api_key
+        self.asr_model, self.sam_model, self.prices = asr_model, sam_model, prices
+
+    async def transcribe(self, wav: bytes, *, languages: list[str], keywords: list[str]) -> MediaResult:
+        import httpx
+
+        req = {"model": self.asr_model, "audioEncoding": "WAV", "mode": "ENDPOINTING",
+               "languageBias": languages, "keywords": keywords[:50]}
+        t0 = time.perf_counter()
+        async with httpx.AsyncClient(timeout=180) as c:
+            r = await c.post(f"{self.base_url}/asr/transcribe",
+                             headers={"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"},
+                             files={"request": (None, json.dumps(req), "application/json"),
+                                    "audio": ("memo.wav", wav, "audio/wav")})
+        if r.status_code != 200:
+            raise ProviderError(f"transcribe HTTP {r.status_code}: {r.text[:300]}")
+        data = r.json()
+        cost = data.get("audioDurationMs", 0) / 3_600_000 * self.prices["asr_per_hour"]
+        return MediaResult(data, int((time.perf_counter() - t0) * 1000), cost, self.asr_model)
+
+    async def segment(self, jpeg: bytes, phrase: str) -> MediaResult:
+        """Every instance of `phrase` in the image as a box normalized to the 0-1000 grid."""
+        import base64
+
+        import httpx
+
+        body = {"model": self.sam_model, "stream": True, "input": [{"type": "message", "role": "user", "content": [
+            {"type": "input_text", "text": phrase},
+            {"type": "input_image", "image_url": "data:image/jpeg;base64," + base64.b64encode(jpeg).decode()}]}]}
+        text = ""
+        t0 = time.perf_counter()
+        async with httpx.AsyncClient(timeout=180) as c:
+            async with c.stream("POST", f"{self.base_url}/responses", json=body,
+                                headers={"Authorization": f"Bearer {self.api_key}", "Accept": "text/event-stream"}) as r:
+                if r.status_code != 200:
+                    raise ProviderError(f"segment HTTP {r.status_code}: {(await r.aread())[:300]!r}")
+                async for line in r.aiter_lines():
+                    if not line.startswith("data: ") or line == "data: [DONE]":
+                        continue
+                    ev = json.loads(line[6:])
+                    if ev.get("type") == "response.output_text.delta":
+                        text += ev.get("delta", "")
+                    elif ev.get("type") == "error":
+                        raise ProviderError(f"segment error: {ev}")
+        boxes = []
+        for x1, y1, x2, y2, w, h in BOX.findall(text):
+            x1, y1, x2, y2, w, h = map(int, (x1, y1, x2, y2, w, h))
+            boxes.append([round(x1 * 1000 / w), round(y1 * 1000 / h), round(x2 * 1000 / w), round(y2 * 1000 / h)])
+        return MediaResult({"phrase": phrase, "count": len(boxes), "boxes": boxes},
+                           int((time.perf_counter() - t0) * 1000), self.prices["sam_per_image"], self.sam_model)

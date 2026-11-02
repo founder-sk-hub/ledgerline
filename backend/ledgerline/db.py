@@ -109,6 +109,12 @@ class DB:
                  json.dumps(doc.get("meta", {}))),
             )
 
+    def archive_batch(self, batch_id: str, archive_id: str) -> None:
+        with self.lock:
+            self.conn.execute("INSERT OR REPLACE INTO documents SELECT doc_id, ?, idx, filename, kind, path, sha256, meta "
+                              "FROM documents WHERE batch_id=?", (archive_id, batch_id))
+            self.conn.execute("DELETE FROM documents WHERE batch_id=?", (batch_id,))
+
     def documents(self, batch_id: str) -> list[dict]:
         with self.lock:
             rows = self.conn.execute("SELECT * FROM documents WHERE batch_id=? ORDER BY idx", (batch_id,)).fetchall()
@@ -116,7 +122,8 @@ class DB:
 
     def document(self, doc_id: str) -> dict | None:
         with self.lock:
-            r = self.conn.execute("SELECT * FROM documents WHERE doc_id=? LIMIT 1", (doc_id,)).fetchone()
+            r = self.conn.execute("SELECT * FROM documents WHERE doc_id=? ORDER BY batch_id LIKE '%-archive' LIMIT 1",
+                                  (doc_id,)).fetchone()
         return self._doc(r) if r else None
 
     @staticmethod

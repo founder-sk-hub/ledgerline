@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, Bot, CheckCircle2, ClipboardList, Cpu, Eye, FileSearch, ShieldCheck, Wrench } from "lucide-react";
+import { AlertTriangle, ArrowRight, Bot, CheckCircle2, ClipboardList, Cpu, Eye, FileSearch, Mic, ScanSearch, ShieldCheck, Wrench } from "lucide-react";
 import type { RunDoc, RunEvent, RunState } from "../api";
 import { go } from "../App";
 import { Card, FlagChip, KindIcon, Stat, StatusChip, eur, int, secs, usd } from "../components/ui";
@@ -243,6 +243,26 @@ function TimelineRow({ e, doc, provider }: { e: RunEvent; doc?: string; provider
         </>
       ) : (
         <span className="text-reject">model error ({p.agent}): {p.error}</span>
+      );
+      break;
+    case "media.transcribed":
+      icon = <Mic size={13} className="text-meta" />;
+      body = (
+        <>
+          <span className="mr-1 rounded bg-meta px-1 font-mono text-[10px] text-white">{p.model}</span>
+          heard {Math.round((p.audio_ms ?? 0) / 1000)} s of audio: <span className="italic text-muted">“{String(p.transcript).slice(0, 160)}…”</span>
+        </>
+      );
+      break;
+    case "media.segmented":
+      tone = "bg-sky-50/70";
+      icon = <ScanSearch size={13} className="text-meta" />;
+      body = (
+        <>
+          <span className="mr-1 rounded bg-meta px-1 font-mono text-[10px] text-white">{p.method}</span>
+          segmented and counted <span className="font-semibold">{p.count} × “{p.object}”</span>
+          {p.model_estimate ? <span className="text-muted"> (Muse Spark's own estimate: {p.model_estimate})</span> : null}
+        </>
       );
       break;
     case "tool.result":

@@ -1,0 +1,8 @@
+.venv
+.env
+.git
+node_modules
+frontend/node_modules
+data/runtime
+data/ledgerline.db*
+**/__pycache__

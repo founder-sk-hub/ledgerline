@@ -36,8 +36,12 @@
       "filename": "IMG_4471.jpg",
       "format": "photo",
       "type": "invoice",
-      "decision": "approve",
-      "flags": [],
+      "decision": "hold",
+      "flags": [
+        "SHORT_DELIVERY"
+      ],
+      "at_risk": 139.96,
+      "note": "Voice memo D31: only 280 L of 400 L arrived in KW 43",
       "amounts": {
         "net": 436.0,
         "vat": 30.52,
@@ -96,8 +100,12 @@
       "filename": "RGC-1022.pdf",
       "format": "pdf",
       "type": "invoice",
-      "decision": "approve",
-      "flags": [],
+      "decision": "hold",
+      "flags": [
+        "SHORT_DELIVERY"
+      ],
+      "at_risk": 426.0,
+      "note": "Delivery photo D32: 9 sacks of 60 kg (540 kg) received, 600 kg invoiced",
       "amounts": {
         "net": 4260.0,
         "vat": 0.0,
@@ -435,6 +443,34 @@
       "type": "other",
       "decision": "file",
       "flags": [],
+      "amounts": {
+        "net": 0.0,
+        "vat": 0.0,
+        "gross": 0.0
+      }
+    },
+    {
+      "key": "D31",
+      "filename": "Sprachmemo_Tom_Filiale-Mitte.wav",
+      "format": "audio",
+      "type": "receiving_note",
+      "decision": "file",
+      "flags": [],
+      "note": "Branch manager's voice memo: KW 43 milk delivery short (28 of 40 cans)",
+      "amounts": {
+        "net": 0.0,
+        "vat": 0.0,
+        "gross": 0.0
+      }
+    },
+    {
+      "key": "D32",
+      "filename": "Wareneingang_RGC_13-10.jpg",
+      "format": "generated_photo",
+      "type": "delivery_photo",
+      "decision": "file",
+      "flags": [],
+      "note": "Photo of the RGC-1022 delivery: 9 sacks (image generated with Muse Image)",
       "amounts": {
         "net": 0.0,
         "vat": 0.0,

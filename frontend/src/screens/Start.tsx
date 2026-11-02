@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Cloud, History, Lock, Upload, Zap } from "lucide-react";
-import { api, pageUrl, type Config, type Doc, type RunSummary } from "../api";
+import { ArrowRight, Cloud, History, Laptop, Lock, Mic, Upload, Zap } from "lucide-react";
+import { api, pageUrl, type Config, type Doc, type Provider, type RunSummary } from "../api";
 import { go } from "../App";
 import { Card, KindIcon, ProviderBadge, eur, usd } from "../components/ui";
 
 export default function Start({ config, runs }: { config: Config | null; runs: RunSummary[] }) {
   const [batch, setBatch] = useState<{ batch_id: string; documents: Doc[] } | null>(null);
-  const [provider, setProvider] = useState<"meta" | "private">("meta");
+  const [provider, setProvider] = useState<Provider["key"]>("meta");
   const [mode, setMode] = useState<"replay" | "live">("replay");
   const [speed, setSpeed] = useState(4);
   const [busy, setBusy] = useState(false);
@@ -60,10 +60,11 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
           A month of messy invoices in. A verified payment batch out, <span className="text-brand-2">waiting for your OK.</span>
         </h1>
         <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-muted">
-          Ledgerline reads PDFs, phone photos and emails, checks every document against your vendor master, purchase orders,
-          contracts, VAT rules and payment history, and catches duplicates, price drift, wrong VAT and payment-diversion fraud. A
-          second Muse Spark pass verifies every decision against the original document. Then it drafts the SEPA batch and vendor
-          emails and stops: nothing moves without a human.
+          Ledgerline reads PDFs, phone photos and emails, hears your staff's voice memos and counts deliveries in photos. It checks
+          everything against your vendor master, purchase orders, contracts, VAT rules, payment history and what actually arrived,
+          and catches duplicates, price drift, wrong VAT, short deliveries and payment-diversion fraud. A second Muse Spark pass
+          verifies every decision against the original document. Then it drafts the SEPA batch and vendor emails and stops:
+          nothing moves without a human.
         </p>
 
         <Card className="mt-6">
@@ -99,7 +100,7 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
         <Card className="p-4">
           <div className="text-sm font-semibold">Engine</div>
           <div className="mt-2 grid gap-2">
-            {config?.providers.map((p) => (
+            {[...(config?.providers ?? [])].sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key)).map((p) => (
               <button
                 key={p.key}
                 onClick={() => setProvider(p.key)}
@@ -108,15 +109,12 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
                 }`}
               >
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  {p.open_weights ? <Lock size={14} className="text-open" /> : <Cloud size={14} className="text-meta" />}
-                  {p.open_weights ? "Private mode" : "Standard"}
+                  {p.local ? <Laptop size={14} className="text-open" /> : p.open_weights ? <Lock size={14} className="text-open" /> : <Cloud size={14} className="text-meta" />}
+                  {ENGINE[p.key].title}
                   <span className="ml-auto font-mono text-[11px] text-muted">{p.badge}</span>
                 </div>
-                <div className="mt-1 text-xs text-muted">
-                  {p.open_weights
-                    ? "Muse Spark Open, Meta's open-weight model, served by Baseten. Same agent; can point at your own deployment."
-                    : "Muse Spark 1.3 on Meta Model API: multimodal reading, tool calling, structured output."}
-                </div>
+                <div className="mt-1 text-xs text-muted">{ENGINE[p.key].text}</div>
+                {mode === "live" && !p.available && <div className="mt-1 text-[11px] text-hold">{ENGINE[p.key].missing}</div>}
               </button>
             ))}
           </div>
@@ -212,11 +210,37 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
   );
 }
 
+const ORDER: Provider["key"][] = ["meta", "local", "private"];
+
+const ENGINE: Record<Provider["key"], { title: string; text: string; missing: string }> = {
+  meta: {
+    title: "Standard",
+    text: "Muse Spark 1.3 reads and decides; Muse Voice Transcribe hears voice memos; SAM 3.1 counts delivered goods. All on Meta Model API.",
+    missing: "Needs MODEL_API_KEY in .env",
+  },
+  local: {
+    title: "Private · on this laptop",
+    text: "Muse Glimmer (open weights) runs on your own machine via Ollama. No document leaves it. Voice memos and SAM are skipped.",
+    missing: "Start Ollama and pull muse-glimmer (see README)",
+  },
+  private: {
+    title: "Private · your open-weights server",
+    text: "Muse Spark Open (open weights) on Baseten or any OpenAI-compatible server you run. Voice memos and SAM are skipped.",
+    missing: "Needs BASETEN_API_KEY (or PRIVATE_BASE_URL) in .env",
+  },
+};
+
 function Thumb({ d }: { d: Doc }) {
   return (
     <div className="group">
       <div className="aspect-[3/4] overflow-hidden rounded-lg bg-paper ring-1 ring-line">
-        {d.kind === "email" ? (
+        {d.kind === "audio" ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#eef6f4] p-2 text-center text-[10px] text-brand-2">
+            <Mic size={22} />
+            <div className="font-medium">Voice memo</div>
+            <div>{d.meta.duration_s ? `${Math.round(d.meta.duration_s)} s` : ""}</div>
+          </div>
+        ) : d.kind === "email" ? (
           <div className="flex h-full flex-col gap-1 p-2 text-[10px] leading-snug text-muted">
             <KindIcon kind="email" size={16} />
             <div className="line-clamp-2 font-medium text-ink">{d.meta.subject}</div>

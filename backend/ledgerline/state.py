@@ -80,7 +80,8 @@ def fold(run: dict, events: list[dict]) -> dict:
         if t == "llm.call":
             llm_calls.append({**p, "ts": ev["ts"], "doc_id": did})
         if doc is not None and t in ("llm.call", "tool.called", "tool.result", "agent.message", "doc.extracted",
-                                     "decision.proposed", "decision.verified", "doc.failed"):
+                                     "decision.proposed", "decision.verified", "doc.failed", "media.transcribed",
+                                     "media.segmented"):
             doc["steps"].append({"seq": ev["seq"], "ts": ev["ts"], "type": t, "agent": ev.get("agent"),
                                  "payload": _slim(t, p)})
         elif did is None and t in ("llm.call", "tool.called", "tool.result", "agent.message"):
@@ -146,6 +147,7 @@ def metrics(st: dict, llm_calls: list[dict]) -> dict:
         "avg_latency_ms": int(statistics.mean(lat)) if lat else 0,
         "p95_latency_ms": int(sorted(lat)[int(0.95 * (len(lat) - 1))]) if lat else 0,
         "by_agent": by_agent,
+        "models": sorted({c["model"] for c in ok_calls}),
         "wall_seconds": round(max(wall, 0), 1),
         "manual_minutes": manual, "human_review_minutes": round(review, 1),
         "minutes_saved": round(max(manual - review, 0), 1),

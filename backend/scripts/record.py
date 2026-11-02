@@ -19,11 +19,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ledgerline.agents import Run  # noqa: E402
-from ledgerline.config import BUDGET_USD, MAX_CONCURRENCY, providers  # noqa: E402
+from ledgerline.config import (ASR_MODEL, BUDGET_USD, LOCAL_CONCURRENCY, MAX_CONCURRENCY, MEDIA_PRICES,  # noqa: E402
+                               SAM_MODEL, providers)
 from ledgerline.db import DB  # noqa: E402
 from ledgerline.documents import load_sample_batch  # noqa: E402
 from ledgerline.events import Bus  # noqa: E402
-from ledgerline.providers import Provider  # noqa: E402
+from ledgerline.providers import MetaMedia, Provider  # noqa: E402
 from ledgerline.replay import export_replay  # noqa: E402
 from ledgerline.state import evaluate, fold  # noqa: E402
 from ledgerline.tools import Books  # noqa: E402
@@ -40,6 +41,10 @@ class PrintingBus(Bus):
         elif type_ == "doc.extracted":
             ex = p["extraction"]
             print(f"  read  {ex.get('doc_type'):13} {ex.get('vendor_name', '')[:34]:34} {ex.get('gross_total')}", flush=True)
+        elif type_ == "media.transcribed":
+            print(f"  heard {p['transcript'][:110]}", flush=True)
+        elif type_ == "media.segmented":
+            print(f"  SAM   counted {p['count']} x '{p['object']}' (model estimate {p.get('model_estimate')})", flush=True)
         elif type_ == "doc.failed":
             print(f"  FAIL  {doc_id}: {p.get('error')}", flush=True)
         elif type_ == "decision.verified":
@@ -53,8 +58,9 @@ class PrintingBus(Bus):
 
 async def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--provider", choices=["meta", "private"], default="meta")
+    ap.add_argument("--provider", choices=["meta", "private", "local"], default="meta")
     ap.add_argument("--limit", type=int, default=0, help="only the first N documents (smoke test)")
+    ap.add_argument("--only", help="comma-separated filename fragments: run just those documents")
     ap.add_argument("--save", help="save the run as data/replays/<name>.json")
     args = ap.parse_args()
 
@@ -67,6 +73,9 @@ async def main() -> None:
     docs = load_sample_batch(db)
     if args.limit:
         docs = docs[: args.limit]
+    if args.only:
+        frags = [f.strip().lower() for f in args.only.split(",")]
+        docs = [d for d in docs if any(f in d["filename"].lower() for f in frags)]
     run_id = uuid.uuid4().hex[:12]
     db.create_run(run_id, "sample", args.provider, "live")
     b = Books(buyer=db.buyer(), vendors=db.ref("vendor"), purchase_orders=db.ref("purchase_order"),
@@ -75,14 +84,17 @@ async def main() -> None:
     print(f"run {run_id} · {cfg.model} @ {cfg.base_url} · {len(docs)} documents")
     t0 = time.time()
     try:
-        await Run(run_id, db, PrintingBus(db), Provider(cfg, MAX_CONCURRENCY), b, docs).execute()
+        meta = providers()["meta"]
+        media = MetaMedia(meta.base_url, meta.api_key, ASR_MODEL, SAM_MODEL, MEDIA_PRICES) if meta.available else None
+        await Run(run_id, db, PrintingBus(db), Provider(cfg, LOCAL_CONCURRENCY if cfg.local else MAX_CONCURRENCY), b, docs,
+                  media=media).execute()
     except Exception as e:  # noqa: BLE001 - already logged as run.failed
         print(f"stopped: {e}")
     st = fold(db.run(run_id), db.events(run_id))
     m = st["metrics"]
     print(f"\nstatus {st['run']['status']} · {time.time() - t0:.0f}s · {m['llm_calls']} calls ({m['llm_errors']} errors) · "
           f"${m['cost_usd']:.4f} · EUR at risk {m['eur_at_risk']:,.2f} · total spend so far ${db.total_spend():.2f}")
-    ev = evaluate(st) if not args.limit else None
+    ev = evaluate(st) if not (args.limit or args.only) else None
     if ev:
         print(f"benchmark: stopped {ev['anomalous_documents_stopped']}/{ev['anomalous_documents']} anomalous docs · "
               f"flag recall {ev['flag_recall']} · precision {ev['flag_precision']} · decisions {ev['decision_accuracy']}")

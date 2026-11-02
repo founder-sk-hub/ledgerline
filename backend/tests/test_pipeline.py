@@ -24,6 +24,21 @@ def tc(i, name, args):
                            function=SimpleNamespace(name=name, arguments=json.dumps(args)))
 
 
+class FakeMedia:
+    """Stands in for Muse Voice Transcribe and SAM 3.1."""
+
+    async def transcribe(self, wav, *, languages, keywords):
+        from ledgerline.providers import MediaResult
+
+        return MediaResult({"transcript": "Nur 28 Kannen statt 40 gekommen.", "turns": [], "audioDurationMs": 22880},
+                           5, 0.001, "muse-voice-transcribe-1.0")
+
+    async def segment(self, jpeg, phrase):
+        from ledgerline.providers import MediaResult
+
+        return MediaResult({"phrase": phrase, "count": 9, "boxes": [[10, 10, 20, 20]] * 9}, 5, 0.0025, "sam-3.1")
+
+
 class FakeProvider:
     def __init__(self, cfg, concurrency=6, docs=None):
         self.cfg = cfg
@@ -55,13 +70,14 @@ class FakeProvider:
             did = text.split("doc_id: ", 1)[1].split("\n", 1)[0].strip()
             tool_msgs = [json.loads(m["content"]) for m in messages if m.get("role") == "tool"]
             if not tool_msgs:
-                calls = [tc(i, n, {"doc_id": did}) for i, n in
-                         enumerate(["lookup_vendor", "compare_to_po", "check_vat", "detect_duplicate"])]
+                calls = [tc(i, n, {"doc_id": did}) for i, n in enumerate(
+                    ["lookup_vendor", "compare_to_po", "check_vat", "detect_duplicate", "check_goods_receipt"])]
             else:
                 codes = sorted({i["code"] for t in tool_msgs for i in t.get("issues", [])})
                 decision = ("reject" if FULL & set(codes) else "escalate" if {"UNKNOWN_VENDOR", "MISSING_PO"} & set(codes)
                             else "hold" if set(codes) - {"CONTRACT_PRICE_CHANGE"} else "approve")
-                if any(f'"doc_type": "{t}"' in text for t in ("receipt", "contract", "delivery_note", "other")):
+                if any(f'"doc_type": "{t}"' in text for t in ("receipt", "contract", "delivery_note", "other",
+                                                               "receiving_note", "delivery_photo")):
                     decision = "file"
                 calls = [tc(9, "submit_decision", {"doc_id": did, "decision": decision, "rationale": "scripted",
                                                     "confidence": 0.9,
@@ -100,6 +116,7 @@ def client(monkeypatch, sample_docs):
 
     monkeypatch.setattr(api, "MODE", "live")
     monkeypatch.setattr(api, "Provider", lambda cfg, conc: FakeProvider(cfg, conc, sample_docs))
+    monkeypatch.setattr(api, "media", lambda: FakeMedia())
     with TestClient(api.app) as c:
         yield c
 
@@ -119,11 +136,13 @@ def test_live_run_to_approval_and_execution(client, truth):
     st = wait_for(client, run_id, "awaiting_approval")
     assert st["run"]["status"] == "awaiting_approval", st["run"]
     by_file = {d["filename"]: d for d in st["docs"]}
-    assert len(by_file) == 30
+    assert len(by_file) == 32
 
     ev = st["evaluation"]
     assert ev["flag_recall"] == 1.0 and ev["flag_precision"] == 1.0, [r for r in ev["rows"] if r["flags"] != r["expected_flags"]]
-    assert st["metrics"]["eur_at_risk"] == pytest.approx(7773.25, abs=0.01)
+    assert st["metrics"]["eur_at_risk"] == pytest.approx(8339.21, abs=0.01)
+    sam = next(d for d in st["docs"] if d["filename"].startswith("Wareneingang"))
+    assert sam["extraction"]["counted"]["count"] == 9
 
     # payments go to master IBANs only, credit note nets against Kaffeeimport Hansa
     pay = {p["vendor_id"]: p for p in st["payment_batch"]["items"]}
@@ -151,10 +170,10 @@ def test_record_and_replay(client, tmp_path, monkeypatch):
     run_id = client.post("/api/runs", json={"mode": "live", "provider": "meta"}).json()["run_id"]
     wait_for(client, run_id, "awaiting_approval")
     meta = client.post(f"/api/runs/{run_id}/record", json={"name": "test-run"}).json()
-    assert meta["stats"]["documents"] == 30
+    assert meta["stats"]["documents"] == 32
 
     rid = client.post("/api/runs", json={"mode": "replay", "replay_id": "test-run", "speed": 1000}).json()["run_id"]
     st = wait_for(client, rid, "awaiting_approval")
     assert st["run"]["replay"]["id"] == "test-run"
-    assert st["metrics"]["eur_at_risk"] == pytest.approx(7773.25, abs=0.01)
+    assert st["metrics"]["eur_at_risk"] == pytest.approx(8339.21, abs=0.01)
     assert len(st["approval_items"]) > 0

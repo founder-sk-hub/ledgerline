@@ -9,15 +9,17 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import re
 from datetime import date, timedelta
 from typing import Any, Awaitable, Callable
 
 from .config import BUDGET_USD, EFFORT, POLICY
 from .db import DB
-from .documents import model_content
+from .documents import asr_wav, model_content, page_images
 from .events import Bus
-from .providers import Provider, ProviderError, structured_request, structured_result
-from .tools import (DRAFTER_TOOLS, FLAG_CODES, INFO_CODES, INVESTIGATOR_TOOLS, PAYABLE, Books, check_vat,
+from .providers import MetaMedia, Provider, ProviderError, structured_request, structured_result
+from .tools import (DRAFTER_TOOLS, EVIDENCE_TYPES, FLAG_CODES, INFO_CODES, INVESTIGATOR_TOOLS, PAYABLE, Books, check_goods_receipt,
+                    check_vat,
                     combine_at_risk, compare_to_po, detect_duplicate, doc_gross, lookup_vendor, match_vendor, num,
                     parse_date, r2)
 
@@ -40,7 +42,7 @@ EXTRACTION_SCHEMA = {
     "type": "object",
     "properties": {
         "doc_type": {"type": "string", "enum": ["invoice", "credit_note", "receipt", "contract", "delivery_note",
-                                                "reminder", "other"]},
+                                                "reminder", "receiving_note", "delivery_photo", "other"]},
         "language": {"type": "string"},
         "vendor_name": {"type": "string"}, "vendor_address": {"type": "string"},
         "vendor_country": {"type": "string", "description": "ISO 3166-1 alpha-2"},
@@ -65,6 +67,13 @@ EXTRACTION_SCHEMA = {
         "notes": {"type": "string"},
         "contract_terms": {"type": "array", "items": {"type": "object", "properties": {
             "term": {"type": "string"}, "value": {"type": "string"}}, "required": ["term", "value"]}},
+        "reference": {"type": "string"},
+        "received_items": {"type": "array", "items": {"type": "object", "properties": {
+            "description": {"type": "string"}, "quantity": {"type": "number"}, "unit": {"type": "string"}},
+            "required": ["description", "quantity", "unit"]}},
+        "count_target": {"type": "string"},
+        "unit_size": {"type": "number"},
+        "counted_items": {"type": "integer"},
         "evidence": {"type": "array", "items": EVIDENCE},
         "confidence": {"type": "number"},
         "uncertain_fields": {"type": "array", "items": {"type": "string"}},
@@ -119,7 +128,9 @@ def intake_prompt(books: Books) -> str:
 Extract exactly what the document says. Do not fix errors and do not invent values; downstream checks rely on
 seeing the document as printed. Use "" for absent text fields.
 - doc_type: invoice | credit_note | receipt (till/card receipt) | contract (incl. order forms, renewals, price
-  notices) | delivery_note | reminder (payment reminder with no invoice data) | other (newsletters, marketing).
+  notices) | delivery_note (the supplier's paper) | reminder (payment reminder with no invoice data) |
+  receiving_note (our own staff reporting what actually arrived, e.g. a transcribed voice memo) | delivery_photo
+  (a photo our staff took of delivered goods) | other (newsletters, marketing).
   An email that contains a complete invoice inline is an invoice.
 - Numbers as plain decimals (German "1.234,56" -> 1234.56; "0,085" -> 0.085). vat_rate in percent (19, not 0.19).
   Dates as YYYY-MM-DD. Credit notes: keep the sign as printed.
@@ -136,6 +147,13 @@ seeing the document as printed. Use "" for absent text fields.
 - evidence: for invoice_number, issue_date, vendor_name, po_number, iban, every line, net_total, vat_total,
   gross_total and anything in notes: the 1-based page, the exact printed text, and bbox [x_min, y_min, x_max, y_max]
   on a normalized 0-1000 grid of that page image ((0,0) = top-left). For email text use page 0 and no bbox.
+- receiving_note: vendor_*, service_period (e.g. "KW 43" for calendar week 43) and reference (invoice, PO or
+  delivery mentioned); received_items = what actually arrived, converted to the invoice unit when the speaker
+  gives it (e.g. "280 Liter" -> 280, "L"). Transcripts can contain recognition errors; read them sensibly.
+- delivery_photo: count_target = a short noun phrase naming one physical unit to count (e.g. "jute coffee sack",
+  "milk can"); unit_size = quantity per unit printed on the packaging (60 for "60 KG"), else 0; counted_items =
+  your own count; reference / vendor_* / issue_date from any label or note in the photo.
+- Fields that do not apply: "" for text, 0 for numbers, [] for lists.
 - confidence 0-1 for the whole extraction; uncertain_fields lists fields that were hard to read."""
 
 
@@ -149,13 +167,18 @@ relevant and what the findings mean:
 - compare_to_po: PO / contract prices and quantities; PO policy (PO required above {POLICY['po_required_above_eur']:.0f}
   EUR unless a contract covers the vendor). For contracts it compares new terms with the existing agreement.
 - check_vat: VAT rules (DE 7% food / 19% standard; intra-EU B2B 0% with reverse charge) and invoice arithmetic.
+- check_goods_receipt: three-way match of invoiced quantities against what our staff recorded as received
+  (delivery photos counted by SAM 3.1, transcribed voice memos).
 - detect_duplicate: paid history and earlier documents in this batch.
 - reread_document: ask the original document a focused question when the extraction looks wrong or unclear.
 - submit_decision: your final answer, exactly once.
 
 Policy:
-- Payables (invoice, credit_note, reminder): run lookup_vendor, detect_duplicate, compare_to_po and check_vat. Call
-  independent tools in parallel.
+- Payables (invoice, credit_note, reminder): run lookup_vendor, detect_duplicate, compare_to_po, check_vat and
+  check_goods_receipt. Call independent tools in parallel.
+- receiving_note / delivery_photo: our own goods-receipt evidence. Run check_goods_receipt to see which invoice it
+  belongs to, then decision "file". Describe the link exactly as the tool reports it (e.g. "same vendor and
+  delivery week"); never claim the document mentions an invoice number it doesn't contain.
 - receipt: small card-paid receipts are filed (decision "file") after check_vat confirms the arithmetic.
 - contract / delivery_note / other: decision "file". For contracts run lookup_vendor and compare_to_po and keep
   CONTRACT_PRICE_CHANGE when prices change.
@@ -176,8 +199,9 @@ Another agent proposed a decision about the attached document. Check its claims 
 Write one claim per material fact: vendor, invoice number, amounts, PO number, IBAN, VAT rate, and every flag.
 For each claim: supported true/false, the exact quote from the document, the 1-based page (0 for email text), a
 bbox [x_min, y_min, x_max, y_max] on a normalized 0-1000 grid of that page image, and your confidence 0-1.
-Facts from the company's own systems (PO prices, vendor-master IBAN, payment history) are given to you as true;
-you verify the document side of each claim.
+Facts from the company's own systems (PO prices, vendor-master IBAN, payment history) and findings computed from
+OTHER documents (photo counts by SAM 3.1, transcribed voice memos) are given to you as true; you verify the side
+of each claim that this document shows.
 verdict = "disputed" if any material claim is not supported by the document or the decision does not follow from
 the evidence; otherwise "confirmed". overall_confidence reflects how sure you are about the decision."""
 
@@ -201,8 +225,11 @@ Use only the numbers given to you."""
 
 # ---------------------------------------------------------------- run context
 class Run:
-    def __init__(self, run_id: str, db: DB, bus: Bus, provider: Provider, books: Books, docs: list[dict]):
+    def __init__(self, run_id: str, db: DB, bus: Bus, provider: Provider, books: Books, docs: list[dict],
+                 media: MetaMedia | None = None):
         self.run_id, self.db, self.bus, self.p, self.books, self.docs = run_id, db, bus, provider, books, docs
+        self.media = media if provider.cfg.media else None  # private engines never send media to Meta
+        self.transcripts: dict[str, str] = {}
         self.by_id = {d["doc_id"]: d for d in docs}
         self.issues: dict[str, list[dict]] = {d["doc_id"]: [] for d in docs}
         self.decisions: dict[str, dict] = {}
@@ -231,6 +258,22 @@ class Run:
                                "cost_usd": round(res.cost_usd, 6), "response_id": res.response_id,
                                "effort": effort if self.p.cfg.reasoning_effort else None}, agent, doc_id)
         return res
+
+    def media_call(self, doc_id: str, purpose: str, res) -> None:
+        self.cost += res.cost_usd
+        self.db.add_spend(self.run_id, "meta", res.model, res.cost_usd)
+        self.emit("llm.call", {"agent": "intake", "purpose": purpose, "provider": "meta", "model": res.model, "ok": True,
+                               "latency_ms": res.latency_ms, "input_tokens": 0, "output_tokens": 0, "cached_tokens": 0,
+                               "reasoning_tokens": 0, "cost_usd": round(res.cost_usd, 6), "response_id": ""},
+                  "intake", doc_id)
+
+    def doc_content(self, doc: dict, pages: list[int] | None = None) -> list[dict]:
+        parts = model_content(doc, pages)
+        if doc["kind"] == "audio":
+            text = self.transcripts.get(doc["doc_id"], "(not transcribed)")
+            parts.insert(0, {"type": "text", "text": f"<voice_memo filename=\"{doc['filename']}\" "
+                                                     f"transcribed_by=\"Muse Voice Transcribe\">\n{text}\n</voice_memo>"})
+        return parts
 
     async def structured(self, agent: str, doc_id: str | None, purpose: str, system: str, content: list | str,
                          name: str, schema: dict, effort: str | None, max_tokens: int = 6000) -> dict:
@@ -317,14 +360,47 @@ class Run:
     async def intake(self, doc: dict) -> None:
         did = doc["doc_id"]
         try:
-            content = [{"type": "text", "text": f"Document file: {doc['filename']}"}] + model_content(doc)
+            if doc["kind"] == "audio":
+                await self.transcribe(doc)
+            content = [{"type": "text", "text": f"Document file: {doc['filename']}"}] + self.doc_content(doc)
             ex = await self.structured("intake", did, "read document", intake_prompt(self.books), content,
                                        "extraction", EXTRACTION_SCHEMA, EFFORT["intake"], max_tokens=8000)
             ex.setdefault("lines", [])
+            if did in self.transcripts:
+                ex["transcript"] = self.transcripts[did]
+            if ex.get("doc_type") == "delivery_photo" and ex.get("count_target"):
+                ex["counted"] = await self.count_objects(doc, ex)
             self.books.extractions[did] = ex
             self.emit("doc.extracted", {"extraction": ex}, "intake", did)
         except (AgentError, ProviderError) as e:
             self.emit("doc.failed", {"stage": "intake", "error": str(e)[:500]}, "intake", did)
+
+    async def transcribe(self, doc: dict) -> None:
+        if not self.media:
+            raise AgentError("voice memos are transcribed by Muse Voice Transcribe on Meta Model API, which private "
+                             "mode does not call; a human must listen to this one")
+        names = [v["name"] for v in self.books.vendors] + [self.books.buyer["name"]]
+        keywords = sorted({k for n in names for k in (n, re.sub(r"\s+(GmbH|eG|UG|B\.V\.|Ltd)\.?$", "", n)) if len(k) <= 30})
+        res = await self.media.transcribe(asr_wav(doc), languages=["German", "English"], keywords=keywords)
+        self.media_call(doc["doc_id"], "transcribe voice memo", res)
+        text = res.data.get("transcript", "")
+        self.transcripts[doc["doc_id"]] = text
+        self.emit("media.transcribed", {"model": res.model, "transcript": text, "turns": res.data.get("turns", []),
+                                        "audio_ms": res.data.get("audioDurationMs"), "latency_ms": res.latency_ms},
+                  "intake", doc["doc_id"])
+
+    async def count_objects(self, doc: dict, ex: dict) -> dict:
+        """Muse Spark decides WHAT to count; SAM 3.1 finds every instance (box + mask)."""
+        phrase = str(ex["count_target"])[:60]
+        if not self.media:
+            return {"object": phrase, "count": int(ex.get("counted_items") or 0), "method": None, "boxes": []}
+        page = page_images(doc)[0]
+        res = await self.media.segment(page.read_bytes(), phrase)
+        self.media_call(doc["doc_id"], f"segment + count '{phrase}'", res)
+        counted = {"object": phrase, "count": res.data["count"], "boxes": res.data["boxes"], "method": res.model,
+                   "model_estimate": int(ex.get("counted_items") or 0)}
+        self.emit("media.segmented", {**counted, "latency_ms": res.latency_ms}, "intake", doc["doc_id"])
+        return counted
 
     async def investigate(self, doc: dict) -> None:
         did = doc["doc_id"]
@@ -347,7 +423,7 @@ class Run:
         async def reread(args: dict) -> dict:
             page = args.get("page")
             content = [{"type": "text", "text": f"Question about {doc['filename']}: {args.get('question')}"}]
-            content += model_content(doc, pages=[page] if page else None)
+            content += self.doc_content(doc, pages=[page] if page else None)
             return await self.structured("intake", did, f"re-read: {str(args.get('question'))[:80]}",
                                          "Answer the question from the document only. Quote the exact text and give "
                                          "the page and a bbox [x_min, y_min, x_max, y_max] on a 0-1000 grid.",
@@ -358,13 +434,16 @@ class Run:
                 return {"error": "decision must be one of approve|hold|reject|escalate|file"}
             return self._record_decision(did, args)
 
-        ex_view = {k: v for k, v in ex.items() if k != "evidence"}
+        ex_view = {k: v for k, v in ex.items() if k not in ("evidence", "counted")}
+        if ex.get("counted"):
+            ex_view["counted_by_sam"] = {k: ex["counted"][k] for k in ("object", "count", "method")}
         user = (f"doc_id: {did}\nfile: {doc['filename']} ({doc['kind']})\n"
                 + (f"email from: {doc['meta'].get('from')}\nsubject: {doc['meta'].get('subject')}\n"
                    if doc["kind"] == "email" else "")
                 + "Extraction (as read from the document):\n" + json.dumps(ex_view, ensure_ascii=False, indent=1))
         handlers = {"lookup_vendor": tool(lookup_vendor), "compare_to_po": tool(compare_to_po),
                     "check_vat": tool(check_vat), "detect_duplicate": tool(detect_duplicate),
+                    "check_goods_receipt": tool(check_goods_receipt),
                     "reread_document": reread, "submit_decision": submit}
         try:
             await self.tool_loop("investigator", did, investigator_prompt(self.books), user, INVESTIGATOR_TOOLS,
@@ -413,13 +492,17 @@ class Run:
         v, _ = match_vendor(self.books, ex, doc)
         facts = {"vendor_master": {k: v[k] for k in ("vendor_id", "name", "iban", "domain")} if v else None,
                  "tool_findings": [{"code": i["code"], "message": i["message"]} for i in self.issues[did]]}
+        if ex.get("doc_type") in EVIDENCE_TYPES:
+            facts["goods_receipt_link"] = check_goods_receipt(self.books, did).get("applies_to")
         key_fields = {k: ex.get(k) for k in ("doc_type", "vendor_name", "invoice_number", "issue_date", "po_number",
                                               "iban", "net_total", "vat_total", "gross_total", "notes")}
         brief = (f"PROPOSED DECISION: {dec['decision']}\nRationale: {dec['rationale']}\n"
                  f"Flags: {json.dumps([{'code': f['code'], 'message': f['message']} for f in dec['flags']], ensure_ascii=False)}\n"
                  f"Key fields as extracted: {json.dumps(key_fields, ensure_ascii=False)}\n"
                  f"Company systems (true): {json.dumps(facts, ensure_ascii=False, default=str)}")
-        content = model_content(doc) + [{"type": "text", "text": brief}]
+        if ex.get("counted"):
+            brief += f"\nSAM 3.1 segmentation of this photo (true): {ex['counted']['count']} x '{ex['counted']['object']}'"
+        content = self.doc_content(doc) + [{"type": "text", "text": brief}]
         try:
             ver = await self.structured("verifier", did, "verify decision", verifier_prompt(self.books), content,
                                         "verification", VERIFY_SCHEMA, EFFORT["verifier"], max_tokens=6000)
@@ -581,6 +664,9 @@ def summarize(tool: str, result: dict) -> str:
         return f"{len(result.get('rate_checks', []))} line rates checked" + flag
     if tool == "detect_duplicate":
         return f"{len(result.get('matches', []))} candidate match(es)" + flag
+    if tool == "check_goods_receipt":
+        ev = result.get("evidence") or []
+        return (f"{len(ev)} receiving record(s)" if ev else (result.get("note") or "no evidence")[:90]) + flag
     if tool == "reread_document":
         return f"\"{str(result.get('answer'))[:120]}\""
     if tool == "submit_decision":

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, CheckCircle2, ChevronRight, Cpu, Download, FileSearch, ShieldCheck, Wrench, XCircle } from "lucide-react";
+import { Bot, CheckCircle2, ChevronRight, Cpu, Download, FileSearch, Mic, ScanSearch, ShieldCheck, Wrench, XCircle } from "lucide-react";
 import { pageUrl, type RunDoc, type RunState, type Step } from "../api";
 import { go } from "../App";
 import { Card, Empty, FlagChip, KindIcon, StatusChip, eur, int, secs, usd } from "../components/ui";
@@ -86,12 +86,38 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
             <Download size={15} />
           </a>
         </div>
+        {d.kind === "audio" && (
+          <div className="space-y-3 p-4">
+            <audio controls src={`/api/docs/${d.doc_id}/file`} className="w-full" />
+            <div className="flex items-center gap-1.5 text-xs font-medium text-meta">
+              <Mic size={13} /> Transcribed by Muse Voice Transcribe
+            </div>
+            <p className="rounded-lg bg-paper p-3 text-sm leading-relaxed">{ex?.transcript ?? "Not transcribed (private engines don't send audio to Meta)."}</p>
+            {(ex?.received_items?.length ?? 0) > 0 && (
+              <div className="text-xs text-muted">
+                Recorded as received:{" "}
+                {ex!.received_items!.map((r) => `${r.quantity} ${r.unit} ${r.description}`).join(", ")}
+                {ex?.service_period ? ` · ${ex.service_period}` : ""}
+              </div>
+            )}
+          </div>
+        )}
         {d.kind === "email" && (
           <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap p-4 font-mono text-xs leading-relaxed scroll-thin">{emailText ?? "…"}</pre>
         )}
         {d.pages > 0 && (
           <div className="relative bg-paper">
             <img src={pageUrl(d.doc_id, page)} alt={d.filename} className="block w-full" />
+            {page === 1 &&
+              ex?.counted?.boxes.map((b, i) => (
+                <div
+                  key={`sam${i}`}
+                  className="absolute rounded-sm border-2 border-dashed border-amber-400 bg-amber-300/15"
+                  style={{ left: `${clamp(b[0]) / 10}%`, top: `${clamp(b[1]) / 10}%`, width: `${(clamp(b[2]) - clamp(b[0])) / 10}%`, height: `${(clamp(b[3]) - clamp(b[1])) / 10}%` }}
+                >
+                  <span className="absolute left-1 top-1 rounded bg-amber-400 px-1.5 text-[11px] font-bold text-ink">{i + 1}</span>
+                </div>
+              ))}
             {pageBoxes.map((b) => (
               <div
                 key={b.i}
@@ -107,6 +133,15 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
                 title={b.label}
               />
             ))}
+          </div>
+        )}
+        {ex?.counted && (
+          <div className="flex items-center gap-2 border-t border-line bg-amber-50 px-4 py-2 text-xs">
+            <ScanSearch size={14} className="text-amber-700" />
+            <span>
+              <span className="font-semibold">{ex.counted.method ?? "Model"} counted {ex.counted.count} × “{ex.counted.object}”</span>
+              {ex.counted.method ? ` (Muse Spark chose what to count; its own estimate was ${ex.counted.model_estimate ?? "–"})` : ""}
+            </span>
           </div>
         )}
         {boxes.length > 0 && (
@@ -315,6 +350,14 @@ function StepRow({ s, provider }: { s: Step; provider?: RunState["run"]["provide
   } else if (s.type === "doc.extracted") {
     icon = <FileSearch size={13} />;
     text = <>extracted {p.doc_type} {p.invoice_number} from {p.vendor_name}</>;
+  } else if (s.type === "media.transcribed") {
+    icon = <Mic size={13} className="text-meta" />;
+    text = <>Muse Voice Transcribe: {Math.round((p.audio_ms ?? 0) / 1000)} s of audio → “{String(p.transcript).slice(0, 140)}…”</>;
+    detail = { turns: p.turns };
+  } else if (s.type === "media.segmented") {
+    icon = <ScanSearch size={13} className="text-meta" />;
+    text = <>SAM 3.1 segmented “{p.object}”: {p.count} instances ({secs(p.latency_ms)})</>;
+    detail = { boxes_0_1000: p.boxes };
   } else if (s.type === "decision.proposed") {
     icon = <ShieldCheck size={13} />;
     text = (

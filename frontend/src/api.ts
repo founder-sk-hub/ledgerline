@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
 export type Provider = {
-  key: "meta" | "private";
+  key: "meta" | "private" | "local";
   label: string;
   badge: string;
   model: string;
   base_url: string;
   available: boolean;
   open_weights: boolean;
+  local?: boolean;
+  media?: boolean;
 };
 
 export type Replay = {
@@ -30,7 +32,7 @@ export type Config = {
   buyer: { name: string; address: string[]; vat_id: string };
 };
 
-export type DocMeta = { size?: number; pages?: number; from?: string; subject?: string; date?: string };
+export type DocMeta = { size?: number; pages?: number; from?: string; subject?: string; date?: string; duration_s?: number };
 export type Doc = { doc_id: string; idx: number; filename: string; kind: string; meta: DocMeta };
 
 export type Evidence = { field: string; page: number; quote: string; bbox?: number[] };
@@ -63,6 +65,10 @@ export type Extraction = {
   evidence: Evidence[];
   confidence: number;
   uncertain_fields?: string[];
+  transcript?: string;
+  reference?: string;
+  received_items?: { description: string; quantity: number; unit: string }[];
+  counted?: { object: string; count: number; boxes: number[][]; method: string | null; model_estimate?: number };
 };
 export type Flag = {
   code: string;
@@ -150,6 +156,7 @@ export type Metrics = {
   avg_latency_ms: number;
   p95_latency_ms: number;
   by_agent: Record<string, { calls: number; cost_usd: number; avg_latency_ms: number }>;
+  models: string[];
   wall_seconds: number;
   manual_minutes: number;
   human_review_minutes: number;

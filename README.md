@@ -2,10 +2,11 @@
 
 **A verifiable back-office agent for small businesses, built on Meta's Muse models.**
 
-Drop in a messy month of invoices, receipts, contracts and supplier emails (PDFs, phone photos, scans, `.eml`).
-Ledgerline reads every document, checks it against your vendor master, purchase orders, contracts, VAT rules and
-payment history, and catches the expensive mistakes: duplicates, price drift, wrong VAT, over-billing, math errors
-and payment-diversion fraud. A second Muse Spark pass verifies every decision against the original document and
+Drop in a messy month of invoices, receipts, contracts and supplier emails (PDFs, phone photos, scans, `.eml`),
+plus what your staff record at the back door: a **voice memo** ("only 28 cans of milk came") or a **photo of the
+delivery**. Ledgerline reads and hears every document, checks it against your vendor master, purchase orders,
+contracts, VAT rules, payment history and what actually arrived, and catches the expensive mistakes: duplicates,
+price drift, wrong VAT, over-billing, short deliveries, math errors and payment-diversion fraud. A second Muse Spark pass verifies every decision against the original document and
 cites where it found the evidence. Then it drafts the SEPA payment batch and the vendor emails, and **stops for a
 human**. Nothing is paid or sent without approval, and every step is in a replayable audit trail that answers
 "why did it do that?".
@@ -55,7 +56,13 @@ flowchart LR
     A[PDF invoices]
     B[Phone photos and scans]
     C[Supplier emails .eml]
+    M[Staff voice memo .wav]
+    F[Delivery photo]
   end
+  M --> ASR[Muse Voice Transcribe]
+  F --> SAM[SAM 3.1 counts what<br/>Muse Spark says to count]
+  ASR --> I
+  SAM --> I
   P[Planner<br/>Muse Spark] --> I
   IN --> I[Intake agent<br/>Muse Spark vision:<br/>structured extraction<br/>+ evidence boxes]
   I --> INV[Investigator agent<br/>Muse Spark tool calling]
@@ -63,6 +70,7 @@ flowchart LR
   INV <-->|compare_to_po| T2[(POs and contracts)]
   INV <-->|check_vat| T3[VAT rules +<br/>invoice arithmetic]
   INV <-->|detect_duplicate| T4[(Paid history +<br/>this batch)]
+  INV <-->|check_goods_receipt| T5[Three-way match:<br/>PO vs invoice vs<br/>what staff received]
   INV <-->|reread_document| I
   INV --> V[Verifier agent<br/>2nd Muse Spark pass on the<br/>ORIGINAL image: claims,<br/>quotes, bounding boxes]
   V -->|disputed or low confidence| H
@@ -79,8 +87,8 @@ EUR-at-risk to every finding, so the money figures never depend on model arithme
 | Stage | What happens | Model |
 |---|---|---|
 | Plan | Reads the batch manifest, writes a plan and a watchlist (possible re-sends, bank-change subjects, non-invoices) | Muse Spark |
-| Intake | Reads each page image or email: type, vendor, IBAN, lines, VAT, totals, anything odd (stamps, handwriting, pressure). Returns quotes and 0–1000 bounding boxes as evidence | Muse Spark (vision, structured output, grounding) |
-| Investigate | Tool loop per document: `lookup_vendor`, `compare_to_po`, `check_vat`, `detect_duplicate`, `reread_document`, then `submit_decision` (approve / hold / reject / escalate / file) | Muse Spark (parallel tool calls) |
+| Intake | Reads each page image or email: type, vendor, IBAN, lines, VAT, totals, anything odd (stamps, handwriting, pressure). Returns quotes and 0–1000 bounding boxes as evidence. Voice memos are transcribed first (vocabulary-biased with your vendor names); for delivery photos Muse Spark decides *what* to count ("jute coffee sack") and SAM 3.1 segments and counts every instance | Muse Spark (vision, structured output, grounding), Muse Voice Transcribe, SAM 3.1 |
+| Investigate | Tool loop per document: `lookup_vendor`, `compare_to_po`, `check_vat`, `detect_duplicate`, `check_goods_receipt`, `reread_document`, then `submit_decision` (approve / hold / reject / escalate / file) | Muse Spark (parallel tool calls) |
 | Verify | Independent second pass: checks each claim against the original document, with a quote, page and bounding box per claim. Disputed or < 0.75 confidence → escalated to a human | Muse Spark (vision, grounding) |
 | Draft | Builds the payment batch from verified approvals (credit notes netted, **always the vendor-master IBAN**), writes vendor emails in the vendor's language, requests approval | Muse Spark (tool calling) |
 | Approve | A human approves or rejects every payment, email and escalation | – |
@@ -102,8 +110,10 @@ the metrics and the replays are all folds over that one log.
 | Email from `kaffeimport-hansa.com` asking to pay a new Lithuanian IBAN | `lookup_vendor`: IBAN mismatch + lookalike sender domain → reject, alert the known contact |
 | Unknown vendor, no PO, above the EUR 500 policy | `lookup_vendor` + PO policy → escalate to a human |
 | Contract renewal raising a fee 249 → 279 EUR/month | `compare_to_po` on contract terms → info flag |
+| Dairy invoice bills 400 L; the branch manager's voice memo says only 28 of 40 cans (280 L) came | Muse Voice Transcribe → `check_goods_receipt` → hold, EUR 139.96 |
+| Coffee invoice bills 600 kg; the receiving photo shows 9 sacks of 60 kg | SAM 3.1 counts 9 sacks → `check_goods_receipt` → hold, EUR 426.00 |
 
-It also has to *not* flag the 14 clean invoices, two card-paid receipts (one with mixed 7%/19% VAT), a credit
+It also has to *not* flag the 12 clean invoices, two card-paid receipts (one with mixed 7%/19% VAT), a credit
 note, a delivery note and a newsletter.
 
 ## Meta models used, and where
@@ -111,18 +121,28 @@ note, a delivery note and a newsletter.
 | Model | Served by | Used for |
 |---|---|---|
 | **Muse Spark 1.3** (`muse-spark-1.3`) | Meta Model API (`api.meta.ai/v1`) | All five agents in standard mode: planner, intake (vision + grounding), investigator (tool calling), verifier (vision + grounding), drafter |
-| **Muse Spark Open** (`meta-models/muse-spark-open`, open weights) | Baseten, or any OpenAI-compatible server you host (vLLM, SGLang, TensorRT-LLM) | The same five agents in **private mode** (UI toggle). Set `PRIVATE_BASE_URL` to run it inside your own infrastructure |
+| **Muse Voice Transcribe** (`muse-voice-transcribe-1.0`) | Meta Model API | Transcribes staff voice memos (German/English code-switching, vendor names as vocabulary bias) |
+| **SAM 3.1** (`sam-3.1`) | Meta Model API | Segments and counts delivered goods in receiving photos; boxes are shown in the audit trail |
+| **Muse Glimmer** (`muse-glimmer:30b-mlx`, open weights) | **Your own laptop** via Ollama | Private mode: the same five agents fully on-device. No document leaves the machine |
+| **Muse Spark Open** (`meta-models/muse-spark-open-1026`, open weights) | Baseten, or any OpenAI-compatible server you host | Private mode on a server you control |
+| Muse Image (`muse-image-1.0`) | Meta Model API | Development only: generated the synthetic delivery photo in the sample batch |
 
 No other AI model is called at runtime. Model ids and endpoints are configurable in `.env`.
 
-**Private mode, honestly stated:** with the hosted demo setting, documents go to Baseten instead of Meta. Because
-Muse Spark Open is open weights, the same code path can point at a deployment you control, so invoices never leave
-your infrastructure. On Meta Model API, note that requests paid with free promotional credits may be used for
-product improvement; the demo data is synthetic for that reason.
+**Private modes, honestly stated:** *On this laptop* runs Muse Glimmer locally through Ollama: invoices never leave
+the machine. Voice memos and SAM counting need Meta Model API, so private modes skip them (the voice memo is
+escalated to a human, photos are counted by the open model itself). *Open-weights server* sends documents to the
+server you configure (Baseten in the demo). On Meta Model API, requests paid with free promotional credits may be
+used for product improvement; the demo data is synthetic for that reason.
+
+To run the local engine: install [Ollama](https://ollama.com) ≥ 0.32.7, then `ollama pull muse-glimmer:30b-mlx`
+(19 GB; fits a 32 GB+ Apple-silicon Mac) and choose *Private · on this laptop* in the UI, or
+`record.py --provider local`.
 
 ## Non-AI services and libraries
 
-- **Baseten**: inference hosting for Muse Spark Open (private mode only).
+- **Ollama**: local runtime for Muse Glimmer (private mode on this laptop).
+- **Baseten**: inference hosting for Muse Spark Open (private mode on a server).
 - No search APIs or other external services. VAT ID checks are format-only (no VIES call).
 - Backend: Python, FastAPI, Uvicorn, `openai` SDK (as an OpenAI-compatible client for Meta / Baseten endpoints),
   pypdfium2 (PDF rendering), Pillow, NumPy, sse-starlette, SQLite.
@@ -132,15 +152,16 @@ product improvement; the demo data is synthetic for that reason.
 ## Synthetic data and benchmark
 
 Everything in `data/samples` is **synthetic**: Spree Roastery GmbH, a fictional Berlin coffee roaster, with eight
-invented vendors, five POs, four contracts, a paid-invoice history, and a 30-document October batch in German and
-English. The batch includes PDFs, phone photos, a stamped scan, thermal receipts and emails. IBANs are
+invented vendors, five POs, four contracts, a paid-invoice history, and a 32-document October batch in German and
+English. The batch includes PDFs, phone photos, a stamped scan, thermal receipts, emails, a staff voice memo
+(synthetic voice from macOS text-to-speech) and a delivery photo (generated with Meta's Muse Image). IBANs are
 checksum-valid but random. `backend/scripts/generate_samples.py` regenerates everything.
 
 `data/samples/ground_truth.json` lists the planted anomalies. It is **never shown to the agent**. It is only used
 afterwards to score a run (Metrics tab, and `record.py` output): flag precision and recall, decision accuracy, and
 how many anomalous documents were stopped.
 
-`make test` runs 65 tests. They show that, given a perfect reading of each document, the deterministic tools
+`make test` runs 70 tests. They show that, given a perfect reading of each document, the deterministic tools
 surface exactly the planted anomalies and the correct EUR at risk, and that the full pipeline through the API,
 approval gate, SEPA export and record/replay works.
 
