@@ -1,0 +1,4117 @@
+{
+ "format": "ledgerline-replay/1",
+ "name": "local-glimmer-subset",
+ "source_run_id": "542b710a7efa",
+ "batch_id": "sample",
+ "recorded_at": "2026-11-02T12:23:16+00:00",
+ "git_commit": "97a6443",
+ "provider": {
+  "key": "local",
+  "label": "Muse Glimmer · on this machine (Ollama)",
+  "badge": "muse-glimmer",
+  "model": "muse-glimmer:30b-mlx",
+  "base_url": "http://127.0.0.1:11434/v1",
+  "available": true,
+  "open_weights": true,
+  "local": true,
+  "media": false
+ },
+ "stats": {
+  "llm_calls": 29,
+  "cost_usd": 0.0,
+  "wall_seconds": 2700.7,
+  "eur_at_risk": 4088.9,
+  "input_tokens": 93848,
+  "output_tokens": 26447,
+  "documents": 6
+ },
+ "events": [
+  {
+   "t": 0.0,
+   "type": "run.started",
+   "agent": "system",
+   "doc_id": null,
+   "payload": {
+    "provider": {
+     "key": "local",
+     "label": "Muse Glimmer · on this machine (Ollama)",
+     "badge": "muse-glimmer",
+     "model": "muse-glimmer:30b-mlx",
+     "base_url": "http://127.0.0.1:11434/v1",
+     "available": true,
+     "open_weights": true,
+     "local": true,
+     "media": false
+    },
+    "docs": [
+     {
+      "doc_id": "79e1299ec3",
+      "filename": "PackWerk_RE_PW-2026-3381.pdf",
+      "kind": "pdf",
+      "pages": 1,
+      "meta": {
+       "size": 34411,
+       "pages": 1
+      }
+     },
+     {
+      "doc_id": "52ecb4a957",
+      "filename": "Scan_2026-10-29.jpg",
+      "kind": "image",
+      "pages": 1,
+      "meta": {
+       "size": 201134,
+       "pages": 1
+      }
+     },
+     {
+      "doc_id": "17022f5a9e",
+      "filename": "RGC-1022.pdf",
+      "kind": "pdf",
+      "pages": 1,
+      "meta": {
+       "size": 33384,
+       "pages": 1
+      }
+     },
+     {
+      "doc_id": "41b301e859",
+      "filename": "RGC-1047.pdf",
+      "kind": "pdf",
+      "pages": 1,
+      "meta": {
+       "size": 32580,
+       "pages": 1
+      }
+     },
+     {
+      "doc_id": "c6cb88c49d",
+      "filename": "Neue Bankverbindung - Rechnung KH-24-0958.eml",
+      "kind": "email",
+      "pages": 0,
+      "meta": {
+       "size": 1118,
+       "from": "Kaffeeimport Hansa Buchhaltung <buchhaltung@kaffeimport-hansa.com>",
+       "subject": "Neue Bankverbindung - Rechnung KH-24-0958",
+       "date": "Thu, 29 Oct 2026 22:57:00 +0100",
+       "pages": 0
+      }
+     },
+     {
+      "doc_id": "0124353ae9",
+      "filename": "Wareneingang_RGC_13-10.jpg",
+      "kind": "image",
+      "pages": 1,
+      "meta": {
+       "size": 308622,
+       "pages": 1
+      }
+     }
+    ]
+   }
+  },
+  {
+   "t": 0.001,
+   "type": "stage.started",
+   "agent": "system",
+   "doc_id": null,
+   "payload": {
+    "stage": "plan"
+   }
+  },
+  {
+   "t": 83.773,
+   "type": "llm.call",
+   "agent": "planner",
+   "doc_id": null,
+   "payload": {
+    "agent": "planner",
+    "purpose": "plan batch",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 83770,
+    "input_tokens": 639,
+    "output_tokens": 957,
+    "cached_tokens": 384,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-443",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 83.774,
+   "type": "plan.created",
+   "agent": "planner",
+   "doc_id": null,
+   "payload": {
+    "summary": "Batch contains 6 items: 4 PDF invoices, 2 image scans, and 1 email with bank-change notice. Plan is to read each document, match to vendor master, PO and contract, verify VAT and payment history, independently verify decisions against source, draft payment batch and vendor emails, then STOP for human approval.",
+    "steps": [
+     {
+      "title": "Ingest and triage batch",
+      "detail": "Read PackWerk_RE_PW-2026-3381.pdf, RGC-1022.pdf, RGC-1047.pdf, Scan_2026-10-29.jpg, Wareneingang_RGC_13-10.jpg and email Neue Bankverbindung - Rechnung KH-24-0958.eml. Log file names, types, pages and sender/subject for 6 items."
+     },
+     {
+      "title": "Extract invoice data",
+      "detail": "Extract vendor name, invoice number, date, net/gross amounts, VAT rate, PO reference and due date from the 4 PDF invoices and the 2 image scans. OCR Scan_2026-10-29.jpg and Wareneingang_RGC_13-10.jpg."
+     },
+     {
+      "title": "Vendor master and PO matching",
+      "detail": "Investigate each extracted invoice against vendor master, open purchase orders and contracts. Confirm vendor ID, approved bank details and VAT treatment for PackWerk, RGC and Kaffeeimport Hansa."
+     },
+     {
+      "title": "Three-way match and history check",
+      "detail": "Match invoices to goods receipt and PO. Check payment history for duplicates. Specifically review PackWerk_RE_PW-2026-3381, RGC-1022, RGC-1047 and KH-24-0958 from email for prior payments or re-sends."
+     },
+     {
+      "title": "VAT and compliance review",
+      "detail": "Validate German VAT rules and reverse charge applicability per vendor and service type. Flag mismatched VAT IDs or rates."
+     },
+     {
+      "title": "Watchlist extra scrutiny",
+      "detail": "Apply enhanced checks to items flagged in watchlist: bank change email, image quality, goods receipt vs invoice, unknown/forwarded cues."
+     },
+     {
+      "title": "Independent verification",
+      "detail": "Have each decision independently verified against source document: amounts, dates, vendor name, bank IBAN and PO reference."
+     },
+     {
+      "title": "Draft outputs",
+      "detail": "Draft payment batch lines for approvable invoices and draft vendor response emails in German where sender is German. Do not execute payment."
+     },
+     {
+      "title": "Human approval gate",
+      "detail": "STOP for human approval. Present summary, watchlist findings and drafts. No payment or email is sent without explicit human sign-off."
+     }
+    ],
+    "watchlist": [
+     {
+      "filename": "Neue Bankverbindung - Rechnung KH-24-0958.eml",
+      "reason": "Bank-detail change notice via email from buchhaltung@kaffeimport-hansa.com; requires vendor master confirmation and anti-fraud verification before any payment."
+     },
+     {
+      "filename": "Scan_2026-10-29.jpg",
+      "reason": "Image scan, single page, no clear vendor prefix in filename; risk of low OCR quality and possible duplicate/re-send."
+     },
+     {
+      "filename": "Wareneingang_RGC_13-10.jpg",
+      "reason": "Goods receipt image, not an invoice; needs matching to RGC-1022.pdf/RGC-1047.pdf and PO, possible non-invoice item."
+     },
+     {
+      "filename": "RGC-1022.pdf",
+      "reason": "RGC series appears twice with RGC-1047.pdf; check for duplicate numbering or overlapping dates."
+     },
+     {
+      "filename": "RGC-1047.pdf",
+      "reason": "RGC series appears twice with RGC-1022.pdf; verify distinct invoices and avoid double payment."
+     }
+    ]
+   }
+  },
+  {
+   "t": 83.775,
+   "type": "stage.started",
+   "agent": "system",
+   "doc_id": null,
+   "payload": {
+    "stage": "intake"
+   }
+  },
+  {
+   "t": 232.422,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 148644,
+    "input_tokens": 4253,
+    "output_tokens": 1211,
+    "cached_tokens": 1811,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-869",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 384.951,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 301167,
+    "input_tokens": 3582,
+    "output_tokens": 1387,
+    "cached_tokens": 4,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-525",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 531.61,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "17022f5a9e",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 447826,
+    "input_tokens": 4239,
+    "output_tokens": 1496,
+    "cached_tokens": 1830,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-980",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 681.712,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "41b301e859",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 597925,
+    "input_tokens": 4239,
+    "output_tokens": 1675,
+    "cached_tokens": 1830,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-521",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 681.713,
+   "type": "doc.extracted",
+   "agent": "intake",
+   "doc_id": "41b301e859",
+   "payload": {
+    "extraction": {
+     "doc_type": "invoice",
+     "language": "en",
+     "vendor_name": "Rotterdam Green Coffee Traders B.V.",
+     "vendor_address": "Maashaven 21, 3072 AH Rotterdam, Netherlands",
+     "vendor_country": "NL",
+     "vendor_vat_id": "NL859432178B01",
+     "vendor_email": "accounts@rgc-traders.nl",
+     "sender_email": "",
+     "iban": "NL51SYNT0417726391",
+     "bic": "SYNTNL2AXXX",
+     "buyer_name": "Spree Roastery GmbH",
+     "buyer_vat_id": "DE318840527",
+     "invoice_number": "RGC-1047",
+     "issue_date": "2026-10-27",
+     "due_date": "",
+     "service_period": "",
+     "po_number": "PO-2026-103",
+     "related_invoice_number": "",
+     "currency": "EUR",
+     "lines": [
+      {
+       "description": "Colombia Supremo 17/18 green coffee, 60 kg bags",
+       "quantity": 600,
+       "unit": "kg",
+       "unit_price": 7.1,
+       "net_amount": 4260,
+       "vat_rate": 21,
+       "vat_category": "food"
+      }
+     ],
+     "prices_include_vat": false,
+     "net_total": 4260,
+     "vat_total": 894.6,
+     "gross_total": 5154.6,
+     "vat_breakdown": [
+      {
+       "rate": 21,
+       "net": 4260,
+       "vat": 894.6
+      }
+     ],
+     "vat_note": "",
+     "payment_status": "unknown",
+     "notes": "Payment due within 30 days.",
+     "contract_terms": [],
+     "reference": "",
+     "received_items": [],
+     "count_target": "",
+     "unit_size": 0,
+     "counted_items": 0,
+     "evidence": [
+      {
+       "field": "invoice_number",
+       "page": 1,
+       "quote": "RGC-1047",
+       "bbox": [
+        795,
+        165,
+        928,
+        176
+       ]
+      },
+      {
+       "field": "issue_date",
+       "page": 1,
+       "quote": "27 Oct 2026",
+       "bbox": [
+        795,
+        181,
+        928,
+        192
+       ]
+      },
+      {
+       "field": "po_number",
+       "page": 1,
+       "quote": "PO-2026-103",
+       "bbox": [
+        795,
+        197,
+        928,
+        208
+       ]
+      },
+      {
+       "field": "buyer_vat_id",
+       "page": 1,
+       "quote": "DE318840527",
+       "bbox": [
+        795,
+        213,
+        928,
+        224
+       ]
+      },
+      {
+       "field": "vendor_name",
+       "page": 1,
+       "quote": "Rotterdam Green Coffee Traders B.V.",
+       "bbox": [
+        52,
+        42,
+        600,
+        65
+       ]
+      },
+      {
+       "field": "vendor_address",
+       "page": 1,
+       "quote": "Maashaven 21, 3072 AH Rotterdam, Netherlands",
+       "bbox": [
+        52,
+        74,
+        410,
+        87
+       ]
+      },
+      {
+       "field": "vendor_vat_id",
+       "page": 1,
+       "quote": "VAT ID NL859432178B01",
+       "bbox": [
+        695,
+        875,
+        873,
+        887
+       ]
+      },
+      {
+       "field": "iban",
+       "page": 1,
+       "quote": "IBAN NL51 SYNT 0417 7263 91",
+       "bbox": [
+        410,
+        886,
+        615,
+        898
+       ]
+      },
+      {
+       "field": "bic",
+       "page": 1,
+       "quote": "BIC SYNTNL2AXXX",
+       "bbox": [
+        410,
+        901,
+        525,
+        913
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "Colombia Supremo 17/18 green coffee, 60 kg bags",
+       "bbox": [
+        120,
+        304,
+        512,
+        319
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "600",
+       "bbox": [
+        557,
+        304,
+        585,
+        319
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "kg",
+       "bbox": [
+        597,
+        304,
+        625,
+        319
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "7.10",
+       "bbox": [
+        718,
+        304,
+        750,
+        319
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "4,260.00",
+       "bbox": [
+        872,
+        304,
+        928,
+        319
+       ]
+      },
+      {
+       "field": "net_total",
+       "page": 1,
+       "quote": "Subtotal €4,260.00",
+       "bbox": [
+        528,
+        341,
+        928,
+        356
+       ]
+      },
+      {
+       "field": "vat_total",
+       "page": 1,
+       "quote": "VAT 21% €894.60",
+       "bbox": [
+        528,
+        358,
+        928,
+        372
+       ]
+      },
+      {
+       "field": "gross_total",
+       "page": 1,
+       "quote": "Total due €5,154.60",
+       "bbox": [
+        528,
+        382,
+        928,
+        397
+       ]
+      },
+      {
+       "field": "notes",
+       "page": 1,
+       "quote": "Payment due within 30 days.",
+       "bbox": [
+        71,
+        417,
+        295,
+        432
+       ]
+      }
+     ],
+     "confidence": 0.95,
+     "uncertain_fields": [
+      "due_date"
+     ]
+    }
+   }
+  },
+  {
+   "t": 760.314,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 676525,
+    "input_tokens": 2167,
+    "output_tokens": 1290,
+    "cached_tokens": 1830,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-91",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 760.314,
+   "type": "doc.extracted",
+   "agent": "intake",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "extraction": {
+     "doc_type": "invoice",
+     "language": "de",
+     "vendor_name": "Kaffeeimport Hansa GmbH",
+     "vendor_address": "",
+     "vendor_country": "",
+     "vendor_vat_id": "",
+     "vendor_email": "",
+     "sender_email": "buchhaltung@kaffeimport-hansa.com",
+     "iban": "LT857044060012845733",
+     "bic": "SYNTLT2XXXX",
+     "buyer_name": "Spree Roastery GmbH",
+     "buyer_vat_id": "DE318840527",
+     "invoice_number": "KH-24-0958",
+     "issue_date": "2026-10-29",
+     "due_date": "2026-11-03",
+     "service_period": "",
+     "po_number": "PO-2026-101",
+     "related_invoice_number": "",
+     "currency": "EUR",
+     "lines": [
+      {
+       "description": "Rohkaffee Brasilien Santos NY2 17/18",
+       "quantity": 300,
+       "unit": "kg",
+       "unit_price": 6.8,
+       "net_amount": 2040,
+       "vat_rate": 7,
+       "vat_category": "food"
+      }
+     ],
+     "prices_include_vat": false,
+     "net_total": 2040,
+     "vat_total": 142.8,
+     "gross_total": 2182.8,
+     "vat_breakdown": [
+      {
+       "rate": 7,
+       "net": 2040,
+       "vat": 142.8
+      }
+     ],
+     "vat_note": "",
+     "payment_status": "unpaid",
+     "notes": "Neue Bankverbindung mitgeteilt: IBAN LT85 7044 0600 1284 5733, BIC SYNTLT2XXXX. Bitte ab sofort ausschließlich auf neues Konto zahlen. Aus organisatorischen Gründen ist Buchhaltung telefonisch derzeit nicht erreichbar.",
+     "contract_terms": [],
+     "reference": "",
+     "received_items": [],
+     "count_target": "",
+     "unit_size": 0,
+     "counted_items": 0,
+     "evidence": [
+      {
+       "field": "invoice_number",
+       "page": 0,
+       "quote": "Rechnungs-Nr.: KH-24-0958",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "issue_date",
+       "page": 0,
+       "quote": "Datum: 29.10.2026",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "vendor_name",
+       "page": 0,
+       "quote": "Kaffeeimport Hansa GmbH",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "po_number",
+       "page": 0,
+       "quote": "Ihre Bestellung: PO-2026-101",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "iban",
+       "page": 0,
+       "quote": "IBAN LT85 7044 0600 1284 5733",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 0,
+       "quote": "300 kg  Rohkaffee Brasilien Santos NY2 17/18  à 6,80 €  = 2.040,00 €",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "net_total",
+       "page": 0,
+       "quote": "Nettobetrag: 2.040,00 €",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "vat_total",
+       "page": 0,
+       "quote": "zzgl. USt. 7%: 142,80 €",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "gross_total",
+       "page": 0,
+       "quote": "Rechnungsbetrag: 2.182,80 €",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "field": "notes",
+       "page": 0,
+       "quote": "aufgrund einer Umstellung unserer Hausbank bitten wir Sie, alle Zahlungen ab sofort ausschließlich auf unser neues Konto zu leisten.",
+       "bbox": [
+        0,
+        0,
+        0,
+        0
+       ]
+      }
+     ],
+     "confidence": 0.85,
+     "uncertain_fields": [
+      "vendor_address",
+      "vendor_country",
+      "vendor_vat_id",
+      "vendor_email",
+      "currency"
+     ]
+    }
+   }
+  },
+  {
+   "t": 861.326,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 777534,
+    "input_tokens": 4037,
+    "output_tokens": 809,
+    "cached_tokens": 1830,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-236",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 861.327,
+   "type": "doc.extracted",
+   "agent": "intake",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "extraction": {
+     "doc_type": "delivery_photo",
+     "language": "de",
+     "vendor_name": "",
+     "vendor_address": "",
+     "vendor_country": "",
+     "vendor_vat_id": "",
+     "vendor_email": "",
+     "sender_email": "",
+     "iban": "",
+     "bic": "",
+     "buyer_name": "",
+     "buyer_vat_id": "",
+     "invoice_number": "",
+     "issue_date": "",
+     "due_date": "",
+     "service_period": "",
+     "po_number": "",
+     "related_invoice_number": "",
+     "currency": "",
+     "lines": [],
+     "prices_include_vat": false,
+     "net_total": 0,
+     "vat_total": 0,
+     "gross_total": 0,
+     "vat_breakdown": [],
+     "vat_note": "",
+     "payment_status": "unknown",
+     "notes": "",
+     "contract_terms": [],
+     "reference": "RGC-1022 / Colombia",
+     "received_items": [],
+     "count_target": "jute coffee sack",
+     "unit_size": 60,
+     "counted_items": 9,
+     "evidence": [],
+     "confidence": 0.6,
+     "uncertain_fields": [
+      "issue_date",
+      "vendor_name",
+      "reference"
+     ],
+     "counted": {
+      "object": "jute coffee sack",
+      "count": 9,
+      "method": null,
+      "boxes": []
+     }
+    }
+   }
+  },
+  {
+   "t": 897.024,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 664598,
+    "input_tokens": 4962,
+    "output_tokens": 688,
+    "cached_tokens": 4249,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-778",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 897.025,
+   "type": "doc.extracted",
+   "agent": "intake",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "extraction": {
+     "doc_type": "invoice",
+     "language": "de",
+     "vendor_name": "PackWerk Verpackungen GmbH",
+     "vendor_address": "Industriestraße 88, 04129 Leipzig",
+     "vendor_country": "DE",
+     "vendor_vat_id": "DE296601184",
+     "vendor_email": "buchhaltung@packwerk.de",
+     "sender_email": "",
+     "iban": "DE46712433174514404740",
+     "bic": "SYNTDEL1XXX",
+     "buyer_name": "Spree Roastery GmbH",
+     "buyer_vat_id": "DE318840527",
+     "invoice_number": "PW-2026-3381",
+     "issue_date": "2026-10-16",
+     "due_date": "",
+     "service_period": "",
+     "po_number": "PO-2026-102",
+     "related_invoice_number": "",
+     "currency": "EUR",
+     "lines": [
+      {
+       "description": "Kaffeebecher 12oz doppelwandig, bedruckt",
+       "quantity": 10000,
+       "unit": "Stk",
+       "unit_price": 0.085,
+       "net_amount": 850,
+       "vat_rate": 19,
+       "vat_category": "goods"
+      }
+     ],
+     "prices_include_vat": false,
+     "net_total": 850,
+     "vat_total": 161.5,
+     "gross_total": 1011.5,
+     "vat_breakdown": [
+      {
+       "rate": 19,
+       "net": 850,
+       "vat": 161.5
+      }
+     ],
+     "vat_note": "",
+     "payment_status": "unknown",
+     "notes": "Zahlbar innerhalb von 30 Tagen ohne Abzug.",
+     "contract_terms": [],
+     "reference": "",
+     "received_items": [],
+     "count_target": "",
+     "unit_size": 0,
+     "counted_items": 0,
+     "evidence": [
+      {
+       "field": "invoice_number",
+       "page": 1,
+       "quote": "PW-2026-3381",
+       "bbox": [
+        826,
+        199,
+        930,
+        214
+       ]
+      },
+      {
+       "field": "issue_date",
+       "page": 1,
+       "quote": "16.10.2026",
+       "bbox": [
+        845,
+        222,
+        930,
+        237
+       ]
+      },
+      {
+       "field": "vendor_name",
+       "page": 1,
+       "quote": "PackWerk Verpackungen GmbH",
+       "bbox": [
+        51,
+        46,
+        423,
+        70
+       ]
+      },
+      {
+       "field": "po_number",
+       "page": 1,
+       "quote": "PO-2026-102",
+       "bbox": [
+        826,
+        244,
+        930,
+        258
+       ]
+      },
+      {
+       "field": "iban",
+       "page": 1,
+       "quote": "IBAN DE46 7124 3317 4514 4047 40",
+       "bbox": [
+        414,
+        879,
+        635,
+        894
+       ]
+      },
+      {
+       "field": "bic",
+       "page": 1,
+       "quote": "BIC SYNTDEL1XXX",
+       "bbox": [
+        414,
+        895,
+        527,
+        910
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "1 Kaffeebecher 12oz doppelwandig, bedruckt 10.000 Stk 0,085 850,00",
+       "bbox": [
+        68,
+        301,
+        930,
+        323
+       ]
+      },
+      {
+       "field": "net_total",
+       "page": 1,
+       "quote": "Nettobetrag 850,00 €",
+       "bbox": [
+        528,
+        337,
+        930,
+        352
+       ]
+      },
+      {
+       "field": "vat_total",
+       "page": 1,
+       "quote": "zzgl. USt. 19% 161,50 €",
+       "bbox": [
+        528,
+        358,
+        930,
+        373
+       ]
+      },
+      {
+       "field": "gross_total",
+       "page": 1,
+       "quote": "Rechnungsbetrag 1.011,50 €",
+       "bbox": [
+        528,
+        379,
+        930,
+        394
+       ]
+      },
+      {
+       "field": "notes",
+       "page": 1,
+       "quote": "Zahlbar innerhalb von 30 Tagen ohne Abzug.",
+       "bbox": [
+        70,
+        410,
+        374,
+        425
+       ]
+      }
+     ],
+     "confidence": 0.95,
+     "uncertain_fields": [
+      "due_date"
+     ]
+    }
+   }
+  },
+  {
+   "t": 955.837,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 570881,
+    "input_tokens": 4497,
+    "output_tokens": 1049,
+    "cached_tokens": 3578,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-414",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 955.838,
+   "type": "doc.extracted",
+   "agent": "intake",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "extraction": {
+     "doc_type": "invoice",
+     "language": "de",
+     "vendor_name": "PackWerk Verpackungen GmbH",
+     "vendor_address": "Industriestraße 88, 04129 Leipzig",
+     "vendor_country": "DE",
+     "vendor_vat_id": "DE296601184",
+     "vendor_email": "buchhaltung@packwerk.de",
+     "sender_email": "",
+     "iban": "DE4671243317451404740",
+     "bic": "SYNTDE1XXX",
+     "buyer_name": "Spree Roastery GmbH",
+     "buyer_vat_id": "DE318840527",
+     "invoice_number": "PW-2026-3381",
+     "issue_date": "2026-10-16",
+     "due_date": "",
+     "service_period": "",
+     "po_number": "PO-2026-102",
+     "related_invoice_number": "",
+     "currency": "EUR",
+     "lines": [
+      {
+       "description": "Kaffeebecher 12oz doppelwandig, bedruckt",
+       "quantity": 10000,
+       "unit": "Stk",
+       "unit_price": 0.085,
+       "net_amount": 850,
+       "vat_rate": 19,
+       "vat_category": "goods"
+      }
+     ],
+     "prices_include_vat": false,
+     "net_total": 850,
+     "vat_total": 161.5,
+     "gross_total": 1011.5,
+     "vat_breakdown": [
+      {
+       "rate": 19,
+       "net": 850,
+       "vat": 161.5
+      }
+     ],
+     "vat_note": "",
+     "payment_status": "unknown",
+     "notes": "KOPIE stamp present; handwritten note 'nochmal geschickt - schon bezahlt?'; Zahlbar innerhalb von 30 Tagen ohne Abzug.",
+     "contract_terms": [],
+     "reference": "",
+     "received_items": [],
+     "count_target": "",
+     "unit_size": 0,
+     "counted_items": 0,
+     "evidence": [
+      {
+       "field": "vendor_name",
+       "page": 1,
+       "quote": "PackWerk Verpackungen GmbH",
+       "bbox": [
+        49,
+        76,
+        317,
+        97
+       ]
+      },
+      {
+       "field": "vendor_address",
+       "page": 1,
+       "quote": "Industriestraße 88, 04129 Leipzig",
+       "bbox": [
+        50,
+        98,
+        267,
+        112
+       ]
+      },
+      {
+       "field": "vendor_vat_id",
+       "page": 1,
+       "quote": "USt-IdNr. DE296601184",
+       "bbox": [
+        780,
+        857,
+        907,
+        872
+       ]
+      },
+      {
+       "field": "vendor_email",
+       "page": 1,
+       "quote": "buchhaltung@packwerk.de",
+       "bbox": [
+        780,
+        874,
+        918,
+        888
+       ]
+      },
+      {
+       "field": "iban",
+       "page": 1,
+       "quote": "IBAN DE46 7124 3317 4514 4047 40",
+       "bbox": [
+        357,
+        857,
+        595,
+        875
+       ]
+      },
+      {
+       "field": "bic",
+       "page": 1,
+       "quote": "BIC SYNTDE1XXX",
+       "bbox": [
+        357,
+        871,
+        470,
+        886
+       ]
+      },
+      {
+       "field": "buyer_name",
+       "page": 1,
+       "quote": "Spree Roastery GmbH",
+       "bbox": [
+        118,
+        162,
+        272,
+        178
+       ]
+      },
+      {
+       "field": "buyer_vat_id",
+       "page": 1,
+       "quote": "Kunde USt-IdNr. DE318840527",
+       "bbox": [
+        784,
+        229,
+        892,
+        245
+       ]
+      },
+      {
+       "field": "invoice_number",
+       "page": 1,
+       "quote": "PW-2026-3381",
+       "bbox": [
+        784,
+        192,
+        869,
+        207
+       ]
+      },
+      {
+       "field": "issue_date",
+       "page": 1,
+       "quote": "16.10.2026",
+       "bbox": [
+        776,
+        211,
+        842,
+        225
+       ]
+      },
+      {
+       "field": "po_number",
+       "page": 1,
+       "quote": "PO-2026-102",
+       "bbox": [
+        784,
+        230,
+        863,
+        246
+       ]
+      },
+      {
+       "field": "lines",
+       "page": 1,
+       "quote": "1 Kaffebecher 12oz doppelwandig, bedruckt 10.000 Stk 0,085 850,00",
+       "bbox": [
+        52,
+        307,
+        882,
+        327
+       ]
+      },
+      {
+       "field": "net_total",
+       "page": 1,
+       "quote": "Nettobetrag 850,00 €",
+       "bbox": [
+        520,
+        338,
+        914,
+        357
+       ]
+      },
+      {
+       "field": "vat_total",
+       "page": 1,
+       "quote": "zzgl. Ust. 19% 161,50 €",
+       "bbox": [
+        520,
+        357,
+        905,
+        377
+       ]
+      },
+      {
+       "field": "gross_total",
+       "page": 1,
+       "quote": "Rechnungsbetrag 1.011,50 €",
+       "bbox": [
+        524,
+        377,
+        909,
+        398
+       ]
+      },
+      {
+       "field": "notes",
+       "page": 1,
+       "quote": "KOPIE",
+       "bbox": [
+        456,
+        467,
+        788,
+        577
+       ]
+      },
+      {
+       "field": "notes",
+       "page": 1,
+       "quote": "nochmal geschickt - schon bezahlt?",
+       "bbox": [
+        96,
+        615,
+        782,
+        670
+       ]
+      }
+     ],
+     "confidence": 0.9,
+     "uncertain_fields": [
+      "due_date",
+      "sender_email",
+      "payment_status"
+     ]
+    }
+   }
+  },
+  {
+   "t": 1041.694,
+   "type": "llm.call",
+   "agent": "intake",
+   "doc_id": "17022f5a9e",
+   "payload": {
+    "agent": "intake",
+    "purpose": "read document",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 510078,
+    "input_tokens": 5286,
+    "output_tokens": 1256,
+    "cached_tokens": 4235,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-960",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1041.696,
+   "type": "doc.failed",
+   "agent": "intake",
+   "doc_id": "17022f5a9e",
+   "payload": {
+    "stage": "intake",
+    "error": "extraction: unparseable model output (no JSON object found in model output)"
+   }
+  },
+  {
+   "t": 1041.698,
+   "type": "stage.started",
+   "agent": "system",
+   "doc_id": null,
+   "payload": {
+    "stage": "review"
+   }
+  },
+  {
+   "t": 1041.724,
+   "type": "decision.proposed",
+   "agent": "system",
+   "doc_id": "17022f5a9e",
+   "payload": {
+    "decision": "escalate",
+    "flags": [],
+    "at_risk_eur": 0.0,
+    "confidence": 0.0,
+    "rationale": "The document could not be read automatically; a human must review it."
+   }
+  },
+  {
+   "t": 1041.724,
+   "type": "decision.verified",
+   "agent": "verifier",
+   "doc_id": "17022f5a9e",
+   "payload": {
+    "verdict": "skipped",
+    "claims": [],
+    "overall_confidence": 0.0,
+    "notes": "Nothing to verify.",
+    "final_status": "escalate",
+    "escalated": false
+   }
+  },
+  {
+   "t": 1089.921,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "start",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 48209,
+    "input_tokens": 2422,
+    "output_tokens": 337,
+    "cached_tokens": 4,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-609",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1089.925,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "lookup_vendor",
+    "args": {
+     "doc_id": "79e1299ec3"
+    },
+    "call_id": "call_x4eqqsqh"
+   }
+  },
+  {
+   "t": 1089.93,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "lookup_vendor",
+    "call_id": "call_x4eqqsqh",
+    "result": {
+     "doc_id": "79e1299ec3",
+     "matched": true,
+     "match_method": "vat_id",
+     "sender_domain": null,
+     "vendor": {
+      "vendor_id": "V003",
+      "name": "PackWerk Verpackungen GmbH",
+      "country": "DE",
+      "vat_id": "DE296601184",
+      "email": "buchhaltung@packwerk.de",
+      "domain": "packwerk.de",
+      "iban": "DE46712433174514404740",
+      "payment_terms_days": 30,
+      "contact": "Sabine Wolf",
+      "language": "de"
+     },
+     "contracts": [],
+     "open_pos": [
+      "PO-2026-102"
+     ],
+     "recent_paid_invoices": [
+      {
+       "invoice_number": "PW-2026-3301",
+       "issue_date": "2026-09-10",
+       "gross": 2023.0,
+       "paid_on": "2026-10-08"
+      }
+     ],
+     "iban_check": "matches vendor master",
+     "issues": []
+    },
+    "summary": "V003 PackWerk Verpackungen GmbH (vat_id) · IBAN matches vendor master · no issues"
+   }
+  },
+  {
+   "t": 1089.93,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "detect_duplicate",
+    "args": {
+     "doc_id": "79e1299ec3"
+    },
+    "call_id": "call_wgjvfxsz"
+   }
+  },
+  {
+   "t": 1089.932,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "detect_duplicate",
+    "call_id": "call_wgjvfxsz",
+    "result": {
+     "doc_id": "79e1299ec3",
+     "invoice_number": "PW-2026-3381",
+     "matches": [],
+     "issues": []
+    },
+    "summary": "0 candidate match(es) · no issues"
+   }
+  },
+  {
+   "t": 1089.933,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "compare_to_po",
+    "args": {
+     "doc_id": "79e1299ec3",
+     "po_number": "PO-2026-102"
+    },
+    "call_id": "call_jbps628l"
+   }
+  },
+  {
+   "t": 1089.933,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "compare_to_po",
+    "call_id": "call_jbps628l",
+    "result": {
+     "doc_id": "79e1299ec3",
+     "po_number": "PO-2026-102",
+     "contracts": [],
+     "lines": [
+      {
+       "description": "Kaffeebecher 12oz doppelwandig, bedruckt",
+       "quantity": 10000.0,
+       "unit_price": 0.085,
+       "agreed_price": 0.085,
+       "source": "PO-2026-102 line 1",
+       "price_delta_pct": 0.0,
+       "po_quantity": 20000,
+       "already_invoiced": 0.0,
+       "remaining": 20000.0
+      }
+     ],
+     "issues": []
+    },
+    "summary": "PO-2026-102 · no issues"
+   }
+  },
+  {
+   "t": 1089.933,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "check_vat",
+    "args": {
+     "doc_id": "79e1299ec3"
+    },
+    "call_id": "call_d2x700rp"
+   }
+  },
+  {
+   "t": 1089.933,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "check_vat",
+    "call_id": "call_d2x700rp",
+    "result": {
+     "doc_id": "79e1299ec3",
+     "vendor_country": "DE",
+     "buyer_country": "DE",
+     "rate_checks": [
+      {
+       "description": "Kaffeebecher 12oz doppelwandig, bedruckt",
+       "category": "goods",
+       "charged_rate": 19.0,
+       "expected_rate": 19.0,
+       "rule": "DE standard rate"
+      }
+     ],
+     "arithmetic": {
+      "sum_of_lines": 850.0,
+      "stated_net": 850.0,
+      "stated_vat": 161.5,
+      "stated_gross": 1011.5,
+      "expected_vat_from_rates": 161.5
+     },
+     "issues": []
+    },
+    "summary": "1 line rates checked · no issues"
+   }
+  },
+  {
+   "t": 1089.933,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "args": {
+     "doc_id": "79e1299ec3"
+    },
+    "call_id": "call_6rhtbgge"
+   }
+  },
+  {
+   "t": 1089.935,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "call_id": "call_6rhtbgge",
+    "result": {
+     "doc_id": "79e1299ec3",
+     "evidence": [],
+     "note": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in the batch.",
+     "issues": []
+    },
+    "summary": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in t · no issues"
+   }
+  },
+  {
+   "t": 1134.469,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "start",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 92744,
+    "input_tokens": 2445,
+    "output_tokens": 354,
+    "cached_tokens": 7,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-234",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1134.472,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "lookup_vendor",
+    "args": {
+     "doc_id": "52ecb4a957"
+    },
+    "call_id": "call_uzmoajxf"
+   }
+  },
+  {
+   "t": 1134.473,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "lookup_vendor",
+    "call_id": "call_uzmoajxf",
+    "result": {
+     "doc_id": "52ecb4a957",
+     "matched": true,
+     "match_method": "vat_id",
+     "sender_domain": null,
+     "vendor": {
+      "vendor_id": "V003",
+      "name": "PackWerk Verpackungen GmbH",
+      "country": "DE",
+      "vat_id": "DE296601184",
+      "email": "buchhaltung@packwerk.de",
+      "domain": "packwerk.de",
+      "iban": "DE46712433174514404740",
+      "payment_terms_days": 30,
+      "contact": "Sabine Wolf",
+      "language": "de"
+     },
+     "contracts": [],
+     "open_pos": [
+      "PO-2026-102"
+     ],
+     "recent_paid_invoices": [
+      {
+       "invoice_number": "PW-2026-3301",
+       "issue_date": "2026-09-10",
+       "gross": 2023.0,
+       "paid_on": "2026-10-08"
+      }
+     ],
+     "iban_check": "MISMATCH",
+     "issues": [
+      {
+       "code": "BANK_DETAILS_CHANGED",
+       "severity": "warning",
+       "message": "Document asks for payment to DE4671243317451404740 but the vendor master has DE46712433174514404740. Bank details must be confirmed via a known channel before any payment.",
+       "at_risk_eur": 1011.5,
+       "details": {
+        "document_iban": "DE4671243317451404740",
+        "master_iban": "DE46712433174514404740"
+       }
+      }
+     ]
+    },
+    "summary": "V003 PackWerk Verpackungen GmbH (vat_id) · IBAN MISMATCH · BANK_DETAILS_CHANGED"
+   }
+  },
+  {
+   "t": 1134.473,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "detect_duplicate",
+    "args": {
+     "doc_id": "52ecb4a957"
+    },
+    "call_id": "call_a988fc5f"
+   }
+  },
+  {
+   "t": 1134.473,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "detect_duplicate",
+    "call_id": "call_a988fc5f",
+    "result": {
+     "doc_id": "52ecb4a957",
+     "invoice_number": "PW-2026-3381",
+     "matches": [
+      {
+       "source": "this batch (PackWerk_RE_PW-2026-3381.pdf)",
+       "doc_id": "79e1299ec3",
+       "vendor_id": "V003",
+       "invoice_number": "PW-2026-3381",
+       "gross": 1011.5,
+       "issue_date": "2026-10-16",
+       "service_period": "",
+       "similarity": 1.0,
+       "reason": "same vendor and invoice number"
+      }
+     ],
+     "issues": [
+      {
+       "code": "DUPLICATE",
+       "severity": "warning",
+       "message": "Duplicate of PW-2026-3381 (this batch (PackWerk_RE_PW-2026-3381.pdf)), already in this batch: same vendor and invoice number.",
+       "at_risk_eur": 1011.5,
+       "details": {
+        "original": "PW-2026-3381",
+        "source": "this batch (PackWerk_RE_PW-2026-3381.pdf)",
+        "similarity": 1.0
+       }
+      }
+     ]
+    },
+    "summary": "1 candidate match(es) · DUPLICATE"
+   }
+  },
+  {
+   "t": 1134.473,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "compare_to_po",
+    "args": {
+     "doc_id": "52ecb4a957",
+     "po_number": "PO-2026-102"
+    },
+    "call_id": "call_dyw74zh4"
+   }
+  },
+  {
+   "t": 1134.473,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "compare_to_po",
+    "call_id": "call_dyw74zh4",
+    "result": {
+     "doc_id": "52ecb4a957",
+     "po_number": "PO-2026-102",
+     "contracts": [],
+     "lines": [
+      {
+       "description": "Kaffeebecher 12oz doppelwandig, bedruckt",
+       "quantity": 10000.0,
+       "unit_price": 0.085,
+       "agreed_price": 0.085,
+       "source": "PO-2026-102 line 1",
+       "price_delta_pct": 0.0,
+       "po_quantity": 20000,
+       "already_invoiced": 10000.0,
+       "remaining": 10000.0
+      }
+     ],
+     "issues": []
+    },
+    "summary": "PO-2026-102 · no issues"
+   }
+  },
+  {
+   "t": 1134.473,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "check_vat",
+    "args": {
+     "doc_id": "52ecb4a957"
+    },
+    "call_id": "call_qioprp81"
+   }
+  },
+  {
+   "t": 1134.474,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "check_vat",
+    "call_id": "call_qioprp81",
+    "result": {
+     "doc_id": "52ecb4a957",
+     "vendor_country": "DE",
+     "buyer_country": "DE",
+     "rate_checks": [
+      {
+       "description": "Kaffeebecher 12oz doppelwandig, bedruckt",
+       "category": "goods",
+       "charged_rate": 19.0,
+       "expected_rate": 19.0,
+       "rule": "DE standard rate"
+      }
+     ],
+     "arithmetic": {
+      "sum_of_lines": 850.0,
+      "stated_net": 850.0,
+      "stated_vat": 161.5,
+      "stated_gross": 1011.5,
+      "expected_vat_from_rates": 161.5
+     },
+     "issues": []
+    },
+    "summary": "1 line rates checked · no issues"
+   }
+  },
+  {
+   "t": 1134.474,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "args": {
+     "doc_id": "52ecb4a957"
+    },
+    "call_id": "call_6u1cdsle"
+   }
+  },
+  {
+   "t": 1134.474,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "call_id": "call_6u1cdsle",
+    "result": {
+     "doc_id": "52ecb4a957",
+     "evidence": [],
+     "note": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in the batch.",
+     "issues": []
+    },
+    "summary": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in t · no issues"
+   }
+  },
+  {
+   "t": 1157.567,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "start",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 115841,
+    "input_tokens": 2412,
+    "output_tokens": 350,
+    "cached_tokens": 1966,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-360",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1157.571,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "lookup_vendor",
+    "args": {
+     "doc_id": "41b301e859"
+    },
+    "call_id": "call_92rpod03"
+   }
+  },
+  {
+   "t": 1157.572,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "lookup_vendor",
+    "call_id": "call_92rpod03",
+    "result": {
+     "doc_id": "41b301e859",
+     "matched": true,
+     "match_method": "vat_id",
+     "sender_domain": null,
+     "vendor": {
+      "vendor_id": "V004",
+      "name": "Rotterdam Green Coffee Traders B.V.",
+      "country": "NL",
+      "vat_id": "NL859432178B01",
+      "email": "accounts@rgc-traders.nl",
+      "domain": "rgc-traders.nl",
+      "iban": "NL51SYNT0417726391",
+      "payment_terms_days": 30,
+      "contact": "Pieter de Vries",
+      "language": "en"
+     },
+     "contracts": [],
+     "open_pos": [
+      "PO-2026-103"
+     ],
+     "recent_paid_invoices": [
+      {
+       "invoice_number": "RGC-0988",
+       "issue_date": "2026-09-04",
+       "gross": 4260.0,
+       "paid_on": "2026-10-02"
+      }
+     ],
+     "iban_check": "matches vendor master",
+     "issues": []
+    },
+    "summary": "V004 Rotterdam Green Coffee Traders B.V. (vat_id) · IBAN matches vendor master · no issues"
+   }
+  },
+  {
+   "t": 1157.572,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "detect_duplicate",
+    "args": {
+     "doc_id": "41b301e859"
+    },
+    "call_id": "call_qqppudpo"
+   }
+  },
+  {
+   "t": 1157.572,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "detect_duplicate",
+    "call_id": "call_qqppudpo",
+    "result": {
+     "doc_id": "41b301e859",
+     "invoice_number": "RGC-1047",
+     "matches": [],
+     "issues": []
+    },
+    "summary": "0 candidate match(es) · no issues"
+   }
+  },
+  {
+   "t": 1157.572,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "compare_to_po",
+    "args": {
+     "doc_id": "41b301e859",
+     "po_number": "PO-2026-103"
+    },
+    "call_id": "call_2xvnsn0v"
+   }
+  },
+  {
+   "t": 1157.573,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "compare_to_po",
+    "call_id": "call_2xvnsn0v",
+    "result": {
+     "doc_id": "41b301e859",
+     "po_number": "PO-2026-103",
+     "contracts": [],
+     "lines": [
+      {
+       "description": "Colombia Supremo 17/18 green coffee, 60 kg bags",
+       "quantity": 600.0,
+       "unit_price": 7.1,
+       "agreed_price": 7.1,
+       "source": "PO-2026-103 line 1",
+       "price_delta_pct": 0.0,
+       "po_quantity": 1200,
+       "already_invoiced": 0.0,
+       "remaining": 1200.0
+      }
+     ],
+     "issues": []
+    },
+    "summary": "PO-2026-103 · no issues"
+   }
+  },
+  {
+   "t": 1157.573,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "check_vat",
+    "args": {
+     "doc_id": "41b301e859"
+    },
+    "call_id": "call_vo8ssy3b"
+   }
+  },
+  {
+   "t": 1157.573,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "check_vat",
+    "call_id": "call_vo8ssy3b",
+    "result": {
+     "doc_id": "41b301e859",
+     "vendor_country": "NL",
+     "buyer_country": "DE",
+     "rate_checks": [
+      {
+       "description": "Colombia Supremo 17/18 green coffee, 60 kg bags",
+       "category": "food",
+       "charged_rate": 21.0,
+       "expected_rate": 0.0,
+       "rule": "intra-EU B2B: 0% on invoice, reverse charge / intra-Community acquisition by the buyer"
+      }
+     ],
+     "arithmetic": {
+      "sum_of_lines": 4260.0,
+      "stated_net": 4260.0,
+      "stated_vat": 894.6,
+      "stated_gross": 5154.6,
+      "expected_vat_from_rates": 894.6
+     },
+     "issues": [
+      {
+       "code": "VAT_RATE",
+       "severity": "warning",
+       "message": "'Colombia Supremo 17/18 green coffee, 60 kg bags' charged 21% VAT; expected 0% (intra-EU B2B: 0% on invoice, reverse charge / intra-Community acquisition by the buyer).",
+       "at_risk_eur": 894.6,
+       "details": {
+        "charged_rate": 21.0,
+        "expected_rate": 0.0,
+        "base": 4260.0
+       }
+      }
+     ]
+    },
+    "summary": "1 line rates checked · VAT_RATE"
+   }
+  },
+  {
+   "t": 1157.573,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "args": {
+     "doc_id": "41b301e859"
+    },
+    "call_id": "call_nrw0icxo"
+   }
+  },
+  {
+   "t": 1157.573,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "call_id": "call_nrw0icxo",
+    "result": {
+     "doc_id": "41b301e859",
+     "evidence": [],
+     "note": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in the batch.",
+     "issues": []
+    },
+    "summary": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in t · no issues"
+   }
+  },
+  {
+   "t": 1180.712,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "start",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 138981,
+    "input_tokens": 2508,
+    "output_tokens": 337,
+    "cached_tokens": 1965,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-166",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1180.717,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "lookup_vendor",
+    "args": {
+     "doc_id": "c6cb88c49d"
+    },
+    "call_id": "call_u7p8bq4u"
+   }
+  },
+  {
+   "t": 1180.718,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "lookup_vendor",
+    "call_id": "call_u7p8bq4u",
+    "result": {
+     "doc_id": "c6cb88c49d",
+     "matched": true,
+     "match_method": "name (1.00)",
+     "sender_domain": "kaffeimport-hansa.com",
+     "vendor": {
+      "vendor_id": "V001",
+      "name": "Kaffeeimport Hansa GmbH",
+      "country": "DE",
+      "vat_id": "DE811290455",
+      "email": "rechnung@kaffeeimport-hansa.de",
+      "domain": "kaffeeimport-hansa.de",
+      "iban": "DE53880009184638342495",
+      "payment_terms_days": 30,
+      "contact": "Jana Petersen",
+      "language": "de"
+     },
+     "contracts": [],
+     "open_pos": [
+      "PO-2026-101"
+     ],
+     "recent_paid_invoices": [
+      {
+       "invoice_number": "KH-24-0877",
+       "issue_date": "2026-08-19",
+       "gross": 4365.6,
+       "paid_on": "2026-09-15"
+      }
+     ],
+     "iban_check": "MISMATCH",
+     "sender_check": "LOOKALIKE",
+     "issues": [
+      {
+       "code": "BANK_DETAILS_CHANGED",
+       "severity": "warning",
+       "message": "Document asks for payment to LT857044060012845733 but the vendor master has DE53880009184638342495. Bank details must be confirmed via a known channel before any payment.",
+       "at_risk_eur": 2182.8,
+       "details": {
+        "document_iban": "LT857044060012845733",
+        "master_iban": "DE53880009184638342495"
+       }
+      },
+      {
+       "code": "SENDER_DOMAIN_MISMATCH",
+       "severity": "warning",
+       "message": "Sent from 'kaffeimport-hansa.com', which imitates the vendor's real domain 'kaffeeimport-hansa.de'.",
+       "at_risk_eur": 2182.8,
+       "details": {
+        "sender_domain": "kaffeimport-hansa.com",
+        "vendor_domain": "kaffeeimport-hansa.de"
+       }
+      }
+     ]
+    },
+    "summary": "V001 Kaffeeimport Hansa GmbH (name (1.00)) · IBAN MISMATCH · BANK_DETAILS_CHANGED, SENDER_DOMAIN_MISMATCH"
+   }
+  },
+  {
+   "t": 1180.718,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "detect_duplicate",
+    "args": {
+     "doc_id": "c6cb88c49d"
+    },
+    "call_id": "call_lzwhx6b2"
+   }
+  },
+  {
+   "t": 1180.719,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "detect_duplicate",
+    "call_id": "call_lzwhx6b2",
+    "result": {
+     "doc_id": "c6cb88c49d",
+     "invoice_number": "KH-24-0958",
+     "matches": [],
+     "issues": []
+    },
+    "summary": "0 candidate match(es) · no issues"
+   }
+  },
+  {
+   "t": 1180.719,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "compare_to_po",
+    "args": {
+     "doc_id": "c6cb88c49d",
+     "po_number": "PO-2026-101"
+    },
+    "call_id": "call_fwjlmqgm"
+   }
+  },
+  {
+   "t": 1180.719,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "compare_to_po",
+    "call_id": "call_fwjlmqgm",
+    "result": {
+     "doc_id": "c6cb88c49d",
+     "po_number": "PO-2026-101",
+     "contracts": [],
+     "lines": [
+      {
+       "description": "Rohkaffee Brasilien Santos NY2 17/18",
+       "quantity": 300.0,
+       "unit_price": 6.8,
+       "agreed_price": 6.8,
+       "source": "PO-2026-101 line 1",
+       "price_delta_pct": 0.0,
+       "po_quantity": 600,
+       "already_invoiced": 0.0,
+       "remaining": 600.0
+      }
+     ],
+     "issues": []
+    },
+    "summary": "PO-2026-101 · no issues"
+   }
+  },
+  {
+   "t": 1180.719,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "check_vat",
+    "args": {
+     "doc_id": "c6cb88c49d"
+    },
+    "call_id": "call_jmkapld6"
+   }
+  },
+  {
+   "t": 1180.72,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "check_vat",
+    "call_id": "call_jmkapld6",
+    "result": {
+     "doc_id": "c6cb88c49d",
+     "vendor_country": "DE",
+     "buyer_country": "DE",
+     "rate_checks": [
+      {
+       "description": "Rohkaffee Brasilien Santos NY2 17/18",
+       "category": "food",
+       "charged_rate": 7.0,
+       "expected_rate": 7.0,
+       "rule": "DE reduced rate (food)"
+      }
+     ],
+     "arithmetic": {
+      "sum_of_lines": 2040.0,
+      "stated_net": 2040.0,
+      "stated_vat": 142.8,
+      "stated_gross": 2182.8,
+      "expected_vat_from_rates": 142.8
+     },
+     "issues": []
+    },
+    "summary": "1 line rates checked · no issues"
+   }
+  },
+  {
+   "t": 1180.72,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "args": {
+     "doc_id": "c6cb88c49d"
+    },
+    "call_id": "call_pgq83w32"
+   }
+  },
+  {
+   "t": 1180.72,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "call_id": "call_pgq83w32",
+    "result": {
+     "doc_id": "c6cb88c49d",
+     "evidence": [],
+     "note": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in the batch.",
+     "issues": []
+    },
+    "summary": "No goods-receipt evidence (staff photo, voice memo or delivery note) for this invoice in t · no issues"
+   }
+  },
+  {
+   "t": 1193.578,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "start",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 151852,
+    "input_tokens": 2266,
+    "output_tokens": 178,
+    "cached_tokens": 1966,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-519",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1193.585,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "args": {
+     "doc_id": "0124353ae9"
+    },
+    "call_id": "call_4yysyn0y"
+   }
+  },
+  {
+   "t": 1193.586,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "tool": "check_goods_receipt",
+    "call_id": "call_4yysyn0y",
+    "result": {
+     "doc_id": "0124353ae9",
+     "evidence": [],
+     "note": "This document is goods-receipt evidence. No matching invoice found yet.",
+     "applies_to": [],
+     "issues": []
+    },
+    "summary": "This document is goods-receipt evidence. No matching invoice found yet. · no issues"
+   }
+  },
+  {
+   "t": 1235.952,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 146014,
+    "input_tokens": 3383,
+    "output_tokens": 374,
+    "cached_tokens": 2418,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-832",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1235.958,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "submit_decision",
+    "args": {
+     "doc_id": "79e1299ec3",
+     "decision": "escalate",
+     "flags": [
+      {
+       "code": "OTHER",
+       "message": "No goods-receipt evidence found for invoice PW-2026-3381; three-way match cannot be completed."
+      }
+     ],
+     "rationale": "Vendor matches and IBAN is correct, PO-2026-102 covers 10 000 units at 0.085 EUR, VAT 19% is correct and arithmetic checks out. No delivery photo or voice memo is available in batch, so receipt of the 10 000 cups cannot be confirmed.",
+     "confidence": 0.85
+    },
+    "call_id": "call_91oyw52w"
+   }
+  },
+  {
+   "t": 1235.958,
+   "type": "decision.proposed",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "decision": "escalate",
+    "flags": [
+     {
+      "code": "OTHER",
+      "severity": "warning",
+      "message": "No goods-receipt evidence found for invoice PW-2026-3381; three-way match cannot be completed.",
+      "at_risk_eur": 0.0,
+      "details": {},
+      "source": "agent"
+     }
+    ],
+    "dismissed": [],
+    "at_risk_eur": 0.0,
+    "gross": 1011.5,
+    "rationale": "Vendor matches and IBAN is correct, PO-2026-102 covers 10 000 units at 0.085 EUR, VAT 19% is correct and arithmetic checks out. No delivery photo or voice memo is available in batch, so receipt of the 10 000 cups cannot be confirmed.",
+    "confidence": 0.85
+   }
+  },
+  {
+   "t": 1235.958,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "tool": "submit_decision",
+    "call_id": "call_91oyw52w",
+    "result": {
+     "recorded": true,
+     "decision": "escalate"
+    },
+    "summary": "decision recorded: escalate"
+   }
+  },
+  {
+   "t": 1303.248,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 168770,
+    "input_tokens": 3722,
+    "output_tokens": 636,
+    "cached_tokens": 2441,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-293",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1303.254,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "submit_decision",
+    "args": {
+     "doc_id": "52ecb4a957",
+     "decision": "reject",
+     "flags": [
+      {
+       "code": "DUPLICATE",
+       "message": "Duplicate of PW-2026-3381 already present in this batch (doc 79e1299ec3) with identical vendor, invoice number and gross 1011.5 EUR."
+      },
+      {
+       "code": "BANK_DETAILS_CHANGED",
+       "message": "Invoice IBAN DE4671243317451404740 does not match vendor master DE46712433174514404740. Payment-diversion risk; do not use document bank details."
+      }
+     ],
+     "rationale": "Document is a duplicate of PW-2026-3381 already in this batch, and the IBAN on the invoice differs from the vendor master. The invoice is marked KOPIE with a handwritten note questioning if already paid. Price matches PO-2026-102 at 0.085 EUR for 10,000 units and VAT arithmetic is correct, but payment must not proceed.",
+     "confidence": 0.92
+    },
+    "call_id": "call_79xm8ffc"
+   }
+  },
+  {
+   "t": 1303.255,
+   "type": "decision.proposed",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "decision": "reject",
+    "flags": [
+     {
+      "code": "DUPLICATE",
+      "severity": "warning",
+      "message": "Duplicate of PW-2026-3381 (this batch (PackWerk_RE_PW-2026-3381.pdf)), already in this batch: same vendor and invoice number.",
+      "at_risk_eur": 1011.5,
+      "details": {
+       "original": "PW-2026-3381",
+       "source": "this batch (PackWerk_RE_PW-2026-3381.pdf)",
+       "similarity": 1.0
+      },
+      "agent_note": "Duplicate of PW-2026-3381 already present in this batch (doc 79e1299ec3) with identical vendor, invoice number and gross 1011.5 EUR.",
+      "source": "tool"
+     },
+     {
+      "code": "BANK_DETAILS_CHANGED",
+      "severity": "warning",
+      "message": "Document asks for payment to DE4671243317451404740 but the vendor master has DE46712433174514404740. Bank details must be confirmed via a known channel before any payment.",
+      "at_risk_eur": 1011.5,
+      "details": {
+       "document_iban": "DE4671243317451404740",
+       "master_iban": "DE46712433174514404740"
+      },
+      "agent_note": "Invoice IBAN DE4671243317451404740 does not match vendor master DE46712433174514404740. Payment-diversion risk; do not use document bank details.",
+      "source": "tool"
+     }
+    ],
+    "dismissed": [],
+    "at_risk_eur": 1011.5,
+    "gross": 1011.5,
+    "rationale": "Document is a duplicate of PW-2026-3381 already in this batch, and the IBAN on the invoice differs from the vendor master. The invoice is marked KOPIE with a handwritten note questioning if already paid. Price matches PO-2026-102 at 0.085 EUR for 10,000 units and VAT arithmetic is correct, but payment must not proceed.",
+    "confidence": 0.92
+   }
+  },
+  {
+   "t": 1303.255,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "tool": "submit_decision",
+    "call_id": "call_79xm8ffc",
+    "result": {
+     "recorded": true,
+     "decision": "reject"
+    },
+    "summary": "decision recorded: reject"
+   }
+  },
+  {
+   "t": 1369.668,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 212092,
+    "input_tokens": 3490,
+    "output_tokens": 621,
+    "cached_tokens": 2408,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-370",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1369.675,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "submit_decision",
+    "args": {
+     "doc_id": "41b301e859",
+     "decision": "hold",
+     "flags": [
+      {
+       "code": "VAT_RATE",
+       "message": "Intra-EU B2B sale NL->DE: invoice charges 21% VAT on 4,260 EUR net. Expected 0% reverse charge on invoice."
+      },
+      {
+       "code": "OTHER",
+       "message": "No goods-receipt evidence found for invoice RGC-1047; three-way match cannot be completed."
+      }
+     ],
+     "rationale": "Vendor matches and invoice is not duplicate. PO PO-2026-103 allows 1,200 kg at 7.1 EUR/kg; invoice is 600 kg at agreed price. VAT is incorrect for intra-EU B2B: 21% charged on 4,260 EUR net (≈894.6 EUR) instead of 0% reverse charge. No goods receipt evidence is on file.",
+     "confidence": 0.78
+    },
+    "call_id": "call_46d13u43"
+   }
+  },
+  {
+   "t": 1369.676,
+   "type": "decision.proposed",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "decision": "hold",
+    "flags": [
+     {
+      "code": "VAT_RATE",
+      "severity": "warning",
+      "message": "'Colombia Supremo 17/18 green coffee, 60 kg bags' charged 21% VAT; expected 0% (intra-EU B2B: 0% on invoice, reverse charge / intra-Community acquisition by the buyer).",
+      "at_risk_eur": 894.6,
+      "details": {
+       "charged_rate": 21.0,
+       "expected_rate": 0.0,
+       "base": 4260.0
+      },
+      "agent_note": "Intra-EU B2B sale NL->DE: invoice charges 21% VAT on 4,260 EUR net. Expected 0% reverse charge on invoice.",
+      "source": "tool"
+     },
+     {
+      "code": "OTHER",
+      "severity": "warning",
+      "message": "No goods-receipt evidence found for invoice RGC-1047; three-way match cannot be completed.",
+      "at_risk_eur": 0.0,
+      "details": {},
+      "source": "agent"
+     }
+    ],
+    "dismissed": [],
+    "at_risk_eur": 894.6,
+    "gross": 5154.6,
+    "rationale": "Vendor matches and invoice is not duplicate. PO PO-2026-103 allows 1,200 kg at 7.1 EUR/kg; invoice is 600 kg at agreed price. VAT is incorrect for intra-EU B2B: 21% charged on 4,260 EUR net (≈894.6 EUR) instead of 0% reverse charge. No goods receipt evidence is on file.",
+    "confidence": 0.78
+   }
+  },
+  {
+   "t": 1369.676,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "41b301e859",
+   "payload": {
+    "tool": "submit_decision",
+    "call_id": "call_46d13u43",
+    "result": {
+     "recorded": true,
+     "decision": "hold"
+    },
+    "summary": "decision recorded: hold"
+   }
+  },
+  {
+   "t": 1417.471,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 236748,
+    "input_tokens": 3690,
+    "output_tokens": 423,
+    "cached_tokens": 2504,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-778",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1417.476,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "submit_decision",
+    "args": {
+     "doc_id": "c6cb88c49d",
+     "decision": "reject",
+     "flags": [
+      {
+       "code": "BANK_DETAILS_CHANGED",
+       "message": "Document requests payment to LT857044060012845733 but vendor master holds DE53880009184638342495."
+      },
+      {
+       "code": "SENDER_DOMAIN_MISMATCH",
+       "message": "Email sent from kaffeimport-hansa.com, vendor master domain is kaffeimport-hansa.de."
+      }
+     ],
+     "rationale": "Invoice KH-24-0958 matches vendor Kaffeeimport Hansa GmbH and PO-2026-101 for 300 kg at 6.80 EUR, net 2,040.00 EUR with correct 7% VAT of 142.80 EUR. However the email demands payment to a Lithuanian IBAN LT857044060012845733 instead of the master IBAN DE53880009184638342495, and is sent from lookalike domain kaffeimport-hansa.com. The message also claims accounting is unreachable by phone, a classic diversion indicator.",
+     "confidence": 0.95
+    },
+    "call_id": "call_0wbhbkxs"
+   }
+  },
+  {
+   "t": 1417.477,
+   "type": "decision.proposed",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "decision": "reject",
+    "flags": [
+     {
+      "code": "BANK_DETAILS_CHANGED",
+      "severity": "warning",
+      "message": "Document asks for payment to LT857044060012845733 but the vendor master has DE53880009184638342495. Bank details must be confirmed via a known channel before any payment.",
+      "at_risk_eur": 2182.8,
+      "details": {
+       "document_iban": "LT857044060012845733",
+       "master_iban": "DE53880009184638342495"
+      },
+      "agent_note": "Document requests payment to LT857044060012845733 but vendor master holds DE53880009184638342495.",
+      "source": "tool"
+     },
+     {
+      "code": "SENDER_DOMAIN_MISMATCH",
+      "severity": "warning",
+      "message": "Sent from 'kaffeimport-hansa.com', which imitates the vendor's real domain 'kaffeeimport-hansa.de'.",
+      "at_risk_eur": 2182.8,
+      "details": {
+       "sender_domain": "kaffeimport-hansa.com",
+       "vendor_domain": "kaffeeimport-hansa.de"
+      },
+      "agent_note": "Email sent from kaffeimport-hansa.com, vendor master domain is kaffeimport-hansa.de.",
+      "source": "tool"
+     }
+    ],
+    "dismissed": [],
+    "at_risk_eur": 2182.8,
+    "gross": 2182.8,
+    "rationale": "Invoice KH-24-0958 matches vendor Kaffeeimport Hansa GmbH and PO-2026-101 for 300 kg at 6.80 EUR, net 2,040.00 EUR with correct 7% VAT of 142.80 EUR. However the email demands payment to a Lithuanian IBAN LT857044060012845733 instead of the master IBAN DE53880009184638342495, and is sent from lookalike domain kaffeimport-hansa.com. The message also claims accounting is unreachable by phone, a classic diversion indicator.",
+    "confidence": 0.95
+   }
+  },
+  {
+   "t": 1417.477,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "tool": "submit_decision",
+    "call_id": "call_0wbhbkxs",
+    "result": {
+     "recorded": true,
+     "decision": "reject"
+    },
+    "summary": "decision recorded: reject"
+   }
+  },
+  {
+   "t": 1437.894,
+   "type": "llm.call",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "agent": "investigator",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 244306,
+    "input_tokens": 2388,
+    "output_tokens": 253,
+    "cached_tokens": 2262,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-606",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 1437.897,
+   "type": "tool.called",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "tool": "submit_decision",
+    "args": {
+     "doc_id": "0124353ae9",
+     "decision": "file",
+     "flags": [],
+     "rationale": "This is a delivery photo with SAM counted 9 jute coffee sacks for reference RGC-1022 / Colombia. Check shows no matching invoice found yet, so it is goods-receipt evidence only. Nothing to pay.",
+     "confidence": 0.85
+    },
+    "call_id": "call_ws9ds6sx"
+   }
+  },
+  {
+   "t": 1437.897,
+   "type": "decision.proposed",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "decision": "file",
+    "flags": [],
+    "dismissed": [],
+    "at_risk_eur": 0.0,
+    "gross": 0.0,
+    "rationale": "This is a delivery photo with SAM counted 9 jute coffee sacks for reference RGC-1022 / Colombia. Check shows no matching invoice found yet, so it is goods-receipt evidence only. Nothing to pay.",
+    "confidence": 0.85
+   }
+  },
+  {
+   "t": 1437.897,
+   "type": "tool.result",
+   "agent": "investigator",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "tool": "submit_decision",
+    "call_id": "call_ws9ds6sx",
+    "result": {
+     "recorded": true,
+     "decision": "file"
+    },
+    "summary": "decision recorded: file"
+   }
+  },
+  {
+   "t": 1958.993,
+   "type": "llm.call",
+   "agent": "verifier",
+   "doc_id": "41b301e859",
+   "payload": {
+    "agent": "verifier",
+    "purpose": "verify decision",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 589306,
+    "input_tokens": 3357,
+    "output_tokens": 1657,
+    "cached_tokens": 536,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-455",
+    "effort": "medium"
+   }
+  },
+  {
+   "t": 1959.008,
+   "type": "decision.verified",
+   "agent": "verifier",
+   "doc_id": "41b301e859",
+   "payload": {
+    "verdict": "confirmed",
+    "overall_confidence": 0.95,
+    "claims": [
+     {
+      "claim": "Vendor name is Rotterdam Green Coffee Traders B.V.",
+      "supported": true,
+      "page": 1,
+      "quote": "Rotterdam Green Coffee Traders B.V.",
+      "bbox": [
+       52,
+       44,
+       575,
+       64
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Invoice number is RGC-1047",
+      "supported": true,
+      "page": 1,
+      "quote": "Invoice no. RGC-1047",
+      "bbox": [
+       570,
+       167,
+       928,
+       177
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Invoice date is 27 Oct 2026",
+      "supported": true,
+      "page": 1,
+      "quote": "Date 27 Oct 2026",
+      "bbox": [
+       569,
+       183,
+       929,
+       193
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Your PO is PO-2026-103",
+      "supported": true,
+      "page": 1,
+      "quote": "Your PO PO-2026-103",
+      "bbox": [
+       571,
+       201,
+       928,
+       211
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Bill to VAT ID is DE318840527",
+      "supported": true,
+      "page": 1,
+      "quote": "Bill to VAT ID DE318840527",
+      "bbox": [
+       569,
+       217,
+       929,
+       229
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Line item description is Colombia Supremo 17/18 green coffee, 60 kg bags",
+      "supported": true,
+      "page": 1,
+      "quote": "Colombia Supremo 17/18 green coffee, 60 kg bags",
+      "bbox": [
+       120,
+       313,
+       510,
+       325
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Line quantity is 600 kg",
+      "supported": true,
+      "page": 1,
+      "quote": "600 kg",
+      "bbox": [
+       557,
+       312,
+       640,
+       325
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Unit price is 7.10",
+      "supported": true,
+      "page": 1,
+      "quote": "7.10",
+      "bbox": [
+       750,
+       313,
+       785,
+       324
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Line amount is 4,260.00",
+      "supported": true,
+      "page": 1,
+      "quote": "4,260.00",
+      "bbox": [
+       875,
+       313,
+       928,
+       324
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Subtotal is €4,260.00",
+      "supported": true,
+      "page": 1,
+      "quote": "Subtotal €4,260.00",
+      "bbox": [
+       528,
+       346,
+       928,
+       359
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "VAT rate shown is 21%",
+      "supported": true,
+      "page": 1,
+      "quote": "VAT 21%",
+      "bbox": [
+       528,
+       370,
+       928,
+       382
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "VAT amount is €894.60",
+      "supported": true,
+      "page": 1,
+      "quote": "VAT 21% €894.60",
+      "bbox": [
+       528,
+       370,
+       928,
+       383
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Total due is €5,154.60",
+      "supported": true,
+      "page": 1,
+      "quote": "Total due €5,154.60",
+      "bbox": [
+       529,
+       390,
+       928,
+       405
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Bank IBAN shown is NL51 SYNT 0417 7263 91",
+      "supported": true,
+      "page": 1,
+      "quote": "IBAN NL51 SYNT 0417 7263 91",
+      "bbox": [
+       400,
+       900,
+       619,
+       911
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Payment due within 30 days note present",
+      "supported": true,
+      "page": 1,
+      "quote": "Payment due within 30 days.",
+      "bbox": [
+       72,
+       424,
+       292,
+       438
+      ],
+      "confidence": 0.99
+     }
+    ],
+    "notes": "All material invoice fields extracted in the proposed decision are present and correctly transcribed from page 1 of RGC-1047.pdf. VAT 21% is explicitly shown on the invoice, supporting the VAT_RATE flag. Vendor, PO, amounts and IBAN match the document.",
+    "final_status": "hold",
+    "escalated": false,
+    "reason": ""
+   }
+  },
+  {
+   "t": 2066.572,
+   "type": "llm.call",
+   "agent": "verifier",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "agent": "verifier",
+    "purpose": "verify decision",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 649064,
+    "input_tokens": 1398,
+    "output_tokens": 1498,
+    "cached_tokens": 531,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-351",
+    "effort": "medium"
+   }
+  },
+  {
+   "t": 2066.572,
+   "type": "decision.verified",
+   "agent": "verifier",
+   "doc_id": "c6cb88c49d",
+   "payload": {
+    "verdict": "confirmed",
+    "overall_confidence": 0.98,
+    "claims": [
+     {
+      "claim": "Vendor name is Kaffeeimport Hansa GmbH",
+      "supported": true,
+      "page": 0,
+      "quote": "Kaffeeimport Hansa GmbH",
+      "bbox": [
+       264,
+       777,
+       437,
+       795
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Invoice number is KH-24-0958",
+      "supported": true,
+      "page": 0,
+      "quote": "Rechnungs-Nr.: KH-24-0958",
+      "bbox": [
+       264,
+       485,
+       415,
+       503
+      ],
+      "confidence": 1.0
+     },
+     {
+      "claim": "Issue date is 29.10.2026",
+      "supported": true,
+      "page": 0,
+      "quote": "Datum: 29.10.2026",
+      "bbox": [
+       264,
+       522,
+       357,
+       538
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "PO number is PO-2026-101",
+      "supported": true,
+      "page": 0,
+      "quote": "Ihre Bestellung: PO-2026-101",
+      "bbox": [
+       264,
+       560,
+       387,
+       578
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Item quantity 300 kg Rohkaffee Brasilien Santos NY2 17/18 at 6.80 € = 2.040,00 €",
+      "supported": true,
+      "page": 0,
+      "quote": "300 kg  Rohkaffee Brasilien Santos NY2 17/18  à 6,80 €  = 2.040,00 €",
+      "bbox": [
+       264,
+       627,
+       688,
+       650
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Net amount is 2.040,00 €",
+      "supported": true,
+      "page": 0,
+      "quote": "Nettobetrag: 2.040,00 €",
+      "bbox": [
+       264,
+       710,
+       395,
+       727
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "VAT rate is 7% and VAT total is 142,80 €",
+      "supported": true,
+      "page": 0,
+      "quote": "zzgl. USt. 7%: 142,80 €",
+      "bbox": [
+       264,
+       747,
+       408,
+       765
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Gross total is 2.182,80 €",
+      "supported": true,
+      "page": 0,
+      "quote": "Rechnungsbetrag: 2.182,80 €",
+      "bbox": [
+       264,
+       785,
+       410,
+       802
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "New IBAN requested is LT85 7044 0600 1284 5733",
+      "supported": true,
+      "page": 0,
+      "quote": "IBAN LT85 7044 0600 1284 5733",
+      "bbox": [
+       264,
+       380,
+       460,
+       398
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "BIC requested is SYNTLT2XXXX",
+      "supported": true,
+      "page": 0,
+      "quote": "BIC SYNTLT2XXXX",
+      "bbox": [
+       264,
+       417,
+       383,
+       435
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Email sender domain is kaffeimport-hansa.com",
+      "supported": true,
+      "page": 0,
+      "quote": "From: Kaffeeimport Hansa Buchhaltung <buchhaltung@kaffeimport-hansa.com>",
+      "bbox": [
+       40,
+       30,
+       308,
+       48
+      ],
+      "confidence": 1.0
+     },
+     {
+      "claim": "Email requests payment to new account only and states accounting is unreachable by phone",
+      "supported": true,
+      "page": 0,
+      "quote": "Bitte aktualisieren Sie Ihre Stammdaten. Aus organisatorischen Gründen ist unsere Buchhaltung telefonisch derzeit nicht erreichbar.",
+      "bbox": [
+       264,
+       242,
+       750,
+       307
+      ],
+      "confidence": 0.97
+     },
+     {
+      "claim": "Payment due date is 03.11.2026",
+      "supported": true,
+      "page": 0,
+      "quote": "Wir bitten um Zahlung bis spätestens 03.11.2026.",
+      "bbox": [
+       264,
+       850,
+       492,
+       868
+      ],
+      "confidence": 0.99
+     }
+    ],
+    "notes": "All material invoice fields, bank-change request and sender domain are present in the email text. The proposed reject decision is consistent with the documented bank-change request and domain mismatch flags.",
+    "final_status": "reject",
+    "escalated": false,
+    "reason": ""
+   }
+  },
+  {
+   "t": 2207.327,
+   "type": "llm.call",
+   "agent": "verifier",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "agent": "verifier",
+    "purpose": "verify decision",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 769421,
+    "input_tokens": 2897,
+    "output_tokens": 1218,
+    "cached_tokens": 536,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-923",
+    "effort": "medium"
+   }
+  },
+  {
+   "t": 2207.327,
+   "type": "decision.verified",
+   "agent": "verifier",
+   "doc_id": "0124353ae9",
+   "payload": {
+    "verdict": "confirmed",
+    "overall_confidence": 0.92,
+    "claims": [
+     {
+      "claim": "The handwritten note on the image records a goods receipt dated 13.10. with reference RGC-1022 / Colombia signed by Tom",
+      "supported": true,
+      "page": 1,
+      "quote": "wareneingang 13.10. RGC-1022 / Colombia gez. Tom",
+      "bbox": [
+       28,
+       69,
+       260,
+       220
+      ],
+      "confidence": 0.97
+     },
+     {
+      "claim": "The photo shows jute coffee sacks marked \"COLOMBIA SUPREMO 60 KG\"",
+      "supported": true,
+      "page": 1,
+      "quote": "COLOMBIA SUPREMO 60 KG",
+      "bbox": [
+       220,
+       570,
+       375,
+       670
+      ],
+      "confidence": 0.96
+     },
+     {
+      "claim": "Nine jute coffee sacks are visible on the pallet in the image, matching SAM 3.1 segmentation of 9 x 'jute coffee sack'",
+      "supported": true,
+      "page": 1,
+      "quote": "COLOMBIA SUPREMO 60 KG",
+      "bbox": [
+       315,
+       280,
+       455,
+       390
+      ],
+      "confidence": 0.94
+     },
+     {
+      "claim": "No invoice number, vendor name, IBAN, net/vat/gross totals, PO number or VAT rate is shown on the document",
+      "supported": true,
+      "page": 1,
+      "quote": "wareneingang 13.10. RGC-1022 / Colombia gez. Tom",
+      "bbox": [
+       28,
+       69,
+       260,
+       220
+      ],
+      "confidence": 0.91
+     }
+    ],
+    "notes": "The image is a goods-receipt delivery photo with handwritten receipt note for RGC-1022 / Colombia dated 13.10. No invoice or payment data is present, consistent with filing as goods-receipt evidence only.",
+    "final_status": "file",
+    "escalated": false,
+    "reason": ""
+   }
+  },
+  {
+   "t": 2302.425,
+   "type": "llm.call",
+   "agent": "verifier",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "agent": "verifier",
+    "purpose": "verify decision",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 683327,
+    "input_tokens": 3230,
+    "output_tokens": 1470,
+    "cached_tokens": 3226,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-695",
+    "effort": "medium"
+   }
+  },
+  {
+   "t": 2302.425,
+   "type": "decision.verified",
+   "agent": "verifier",
+   "doc_id": "79e1299ec3",
+   "payload": {
+    "verdict": "confirmed",
+    "overall_confidence": 0.95,
+    "claims": [
+     {
+      "claim": "Vendor name is PackWerk Verpackungen GmbH",
+      "supported": true,
+      "page": 1,
+      "quote": "PackWerk Verpackungen GmbH",
+      "bbox": [
+       52,
+       44,
+       422,
+       62
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Invoice number is PW-2026-3381",
+      "supported": true,
+      "page": 1,
+      "quote": "Rechnungs-Nr. PW-2026-3381",
+      "bbox": [
+       560,
+       165,
+       930,
+       180
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Issue date is 16.10.2026",
+      "supported": true,
+      "page": 1,
+      "quote": "Datum 16.10.2026",
+      "bbox": [
+       564,
+       181,
+       930,
+       193
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "PO number is PO-2026-102",
+      "supported": true,
+      "page": 1,
+      "quote": "Ihre Bestellung PO-2026-102",
+      "bbox": [
+       563,
+       196,
+       930,
+       210
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "IBAN on invoice is DE46 7124 3317 4514 4047 40",
+      "supported": true,
+      "page": 1,
+      "quote": "IBAN DE46 7124 3317 4514 4047 40",
+      "bbox": [
+       395,
+       889,
+       634,
+       904
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Line item quantity is 10.000 Stk",
+      "supported": true,
+      "page": 1,
+      "quote": "10.000 Stk",
+      "bbox": [
+       541,
+       306,
+       613,
+       320
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Line item unit price is 0,085",
+      "supported": true,
+      "page": 1,
+      "quote": "0,085",
+      "bbox": [
+       747,
+       305,
+       783,
+       320
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Line item total is 850,00",
+      "supported": true,
+      "page": 1,
+      "quote": "850,00",
+      "bbox": [
+       887,
+       305,
+       932,
+       319
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Net total is 850,00 €",
+      "supported": true,
+      "page": 1,
+      "quote": "Nettobetrag 850,00 €",
+      "bbox": [
+       529,
+       338,
+       932,
+       352
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "VAT rate is 19%",
+      "supported": true,
+      "page": 1,
+      "quote": "zzgl. USt. 19%",
+      "bbox": [
+       529,
+       361,
+       602,
+       376
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "VAT total is 161,50 €",
+      "supported": true,
+      "page": 1,
+      "quote": "161,50 €",
+      "bbox": [
+       864,
+       361,
+       932,
+       376
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Gross total is 1.011,50 €",
+      "supported": true,
+      "page": 1,
+      "quote": "Rechnungsbetrag 1.011,50 €",
+      "bbox": [
+       529,
+       383,
+       932,
+       398
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Customer VAT ID shown is DE318840527",
+      "supported": true,
+      "page": 1,
+      "quote": "Kunde USt-IdNr. DE318840527",
+      "bbox": [
+       563,
+       212,
+       930,
+       226
+      ],
+      "confidence": 0.98
+     }
+    ],
+    "notes": "Document fields verified against invoice image. Escalation rationale relies on missing goods-receipt evidence, which is outside document content and taken as true per system data.",
+    "final_status": "escalate",
+    "escalated": false,
+    "reason": ""
+   }
+  },
+  {
+   "t": 2449.936,
+   "type": "llm.call",
+   "agent": "verifier",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "agent": "verifier",
+    "purpose": "verify decision",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 650083,
+    "input_tokens": 2766,
+    "output_tokens": 2086,
+    "cached_tokens": 2762,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-304",
+    "effort": "medium"
+   }
+  },
+  {
+   "t": 2499.522,
+   "type": "llm.call",
+   "agent": "verifier",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "agent": "verifier",
+    "purpose": "verify decision",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 49582,
+    "input_tokens": 3483,
+    "output_tokens": 800,
+    "cached_tokens": 2765,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-830",
+    "effort": "medium"
+   }
+  },
+  {
+   "t": 2499.523,
+   "type": "decision.verified",
+   "agent": "verifier",
+   "doc_id": "52ecb4a957",
+   "payload": {
+    "verdict": "disputed",
+    "overall_confidence": 0.88,
+    "claims": [
+     {
+      "claim": "Vendor name is PackWerk Verpackungen GmbH",
+      "supported": true,
+      "page": 1,
+      "quote": "PackWerk Verpackungen GmbH",
+      "bbox": [
+       50,
+       70,
+       280,
+       95
+      ],
+      "confidence": 0.99
+     },
+     {
+      "claim": "Invoice number is PW-2026-3381",
+      "supported": true,
+      "page": 1,
+      "quote": "PW-2026-3381",
+      "bbox": [
+       800,
+       170,
+       880,
+       190
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Issue date is 16.10.2026",
+      "supported": true,
+      "page": 1,
+      "quote": "16.10.2026",
+      "bbox": [
+       800,
+       195,
+       870,
+       215
+      ],
+      "confidence": 0.97
+     },
+     {
+      "claim": "PO number is PO-2026-102",
+      "supported": true,
+      "page": 1,
+      "quote": "PO-2026-102",
+      "bbox": [
+       800,
+       220,
+       870,
+       240
+      ],
+      "confidence": 0.97
+     },
+     {
+      "claim": "Net total is 850,00 €",
+      "supported": true,
+      "page": 1,
+      "quote": "Nettobetrag 850,00 €",
+      "bbox": [
+       625,
+       345,
+       880,
+       365
+      ],
+      "confidence": 0.96
+     },
+     {
+      "claim": "VAT amount is 161,50 € with rate 19%",
+      "supported": true,
+      "page": 1,
+      "quote": "zzgl. Ust. 19% 161,50 €",
+      "bbox": [
+       620,
+       370,
+       880,
+       390
+      ],
+      "confidence": 0.96
+     },
+     {
+      "claim": "Gross total is 1.011,50 €",
+      "supported": true,
+      "page": 1,
+      "quote": "Rechnungsbetrag 1.011,50 €",
+      "bbox": [
+       600,
+       395,
+       880,
+       415
+      ],
+      "confidence": 0.96
+     },
+     {
+      "claim": "IBAN shown on document is DE4671243317451404740",
+      "supported": false,
+      "page": 1,
+      "quote": "IBAN DE46 7124 3317 4514 4047 40",
+      "bbox": [
+       380,
+       870,
+       600,
+       890
+      ],
+      "confidence": 0.97
+     },
+     {
+      "claim": "VAT rate shown is 19%",
+      "supported": true,
+      "page": 1,
+      "quote": "zzgl. Ust. 19%",
+      "bbox": [
+       600,
+       370,
+       690,
+       385
+      ],
+      "confidence": 0.97
+     },
+     {
+      "claim": "Document bears a KOPIE stamp",
+      "supported": true,
+      "page": 1,
+      "quote": "KOPIE",
+      "bbox": [
+       500,
+       480,
+       750,
+       560
+      ],
+      "confidence": 0.98
+     },
+     {
+      "claim": "Handwritten note reads 'nochmal geschickt - schon bezahlt?'",
+      "supported": true,
+      "page": 1,
+      "quote": "nochmal geschickt - schon bezahlt?",
+      "bbox": [
+       100,
+       625,
+       750,
+       670
+      ],
+      "confidence": 0.95
+     }
+    ],
+    "notes": "The extracted IBAN in the proposal (DE4671243317451404740) does not match the IBAN printed on the invoice, which is DE46 7124 3317 4514 4047 40 i.e. DE46712433174514404740. The vendor master IBAN supplied by the systems is DE46712433174514404740, matching the printed IBAN, so the BANK_DETAILS_CHANGED flag is not supported by the document. The DUPLICATE flag relies on batch knowledge and is not directly verifiable from the invoice page alone, though a KOPIE stamp and a handwritten query about prior payment are present.",
+    "final_status": "escalate",
+    "escalated": true,
+    "reason": "Verifier disputed (confidence 0.88); unsupported: IBAN shown on document is DE4671243317451404740"
+   }
+  },
+  {
+   "t": 2499.526,
+   "type": "stage.started",
+   "agent": "system",
+   "doc_id": null,
+   "payload": {
+    "stage": "draft"
+   }
+  },
+  {
+   "t": 2667.937,
+   "type": "llm.call",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "agent": "drafter",
+    "purpose": "start",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 168395,
+    "input_tokens": 2633,
+    "output_tokens": 1674,
+    "cached_tokens": 7,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-334",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 2667.939,
+   "type": "tool.called",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "draft_email",
+    "args": {
+     "vendor_id": "V004",
+     "doc_ids": [
+      "41b301e859"
+     ],
+     "subject": "Request for corrected invoice RGC-1047 and goods receipt confirmation",
+     "body": "Dear Pieter de Vries,\n\nThank you for your invoice RGC-1047 dated in batch for €5,154.60 gross.\n\nDuring our check we noted the following points that prevent processing:\n- VAT is shown as 21% on the net amount of €4,260.00, resulting in VAT of €894.60. For this intra-EU B2B supply of 'Colombia Supremo 17/18 green coffee, 60 kg bags' we expect 0% VAT on the invoice with reverse charge / intra-Community acquisition by the buyer.\n- We have no goods receipt evidence on file for invoice RGC-1047, therefore a three-way match cannot be completed.\n\nCould you please provide a corrected invoice for the same quantity and net value with 0% VAT, and send us the delivery note / goods receipt confirmation for the 600 kg referenced on PO PO-2026-103.\n\nOnce we receive the corrected documents we will process payment promptly.\n\nKind regards,\nBuchhaltung, Spree Roastery GmbH",
+     "language": "en",
+     "purpose": "Hold: request corrected invoice for VAT rate error and missing goods receipt."
+    },
+    "call_id": "call_2us88zw1"
+   }
+  },
+  {
+   "t": 2667.942,
+   "type": "draft.email",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "email_id": "E01",
+    "vendor_id": "V004",
+    "to": "accounts@rgc-traders.nl",
+    "to_name": "Pieter de Vries, Rotterdam Green Coffee Traders B.V.",
+    "subject": "Request for corrected invoice RGC-1047 and goods receipt confirmation",
+    "body": "Dear Pieter de Vries,\n\nThank you for your invoice RGC-1047 dated in batch for €5,154.60 gross.\n\nDuring our check we noted the following points that prevent processing:\n- VAT is shown as 21% on the net amount of €4,260.00, resulting in VAT of €894.60. For this intra-EU B2B supply of 'Colombia Supremo 17/18 green coffee, 60 kg bags' we expect 0% VAT on the invoice with reverse charge / intra-Community acquisition by the buyer.\n- We have no goods receipt evidence on file for invoice RGC-1047, therefore a three-way match cannot be completed.\n\nCould you please provide a corrected invoice for the same quantity and net value with 0% VAT, and send us the delivery note / goods receipt confirmation for the 600 kg referenced on PO PO-2026-103.\n\nOnce we receive the corrected documents we will process payment promptly.\n\nKind regards,\nBuchhaltung, Spree Roastery GmbH",
+    "language": "en",
+    "doc_ids": [
+     "41b301e859"
+    ],
+    "purpose": "Hold: request corrected invoice for VAT rate error and missing goods receipt."
+   }
+  },
+  {
+   "t": 2667.944,
+   "type": "tool.result",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "draft_email",
+    "call_id": "call_2us88zw1",
+    "result": {
+     "drafted": "E01",
+     "to": "accounts@rgc-traders.nl"
+    },
+    "summary": "email E01 to accounts@rgc-traders.nl"
+   }
+  },
+  {
+   "t": 2667.945,
+   "type": "tool.called",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "draft_email",
+    "args": {
+     "vendor_id": "V001",
+     "doc_ids": [
+      "c6cb88c49d"
+     ],
+     "subject": "Bestätigung Ihrer Bankverbindung für Rechnung KH-24-0958",
+     "body": "Sehr geehrte Jana Petersen,\n\nwir haben eine E-Mail mit dem Betreff 'Neue Bankverbindung - Rechnung KH-24-0958' erhalten, die eine Zahlung von €2.182,80 für Rechnung KH-24-0958 an das IBAN LT857044060012845733 veranlasst.\n\nNach unserer Prüfung entspricht dies nicht unseren Unterlagen. In unserem Vendor Master ist für Kaffeeimport Hansa GmbH das IBAN DE53880009184638342495 hinterlegt. Die Nachricht kam außerdem von der Domain kaffeimport-hansa.com und enthält den Hinweis, die Buchhaltung sei telefonisch nicht erreichbar.\n\nAus Sicherheitsgründen bitten wir Sie daher, uns Ihre aktuelle Bankverbindung ausschließlich über einen bekannten Kanal zu bestätigen und uns bitte telefonisch zu kontaktieren, um die Details für Rechnung KH-24-0958 zu klären.\n\nVielen Dank für Ihre Unterstützung.\n\nMit freundlichen Grüßen\nBuchhaltung, Spree Roastery GmbH",
+     "language": "de",
+     "purpose": "Suspected fraud: confirm bank details via known contact after suspicious sender domain and changed IBAN."
+    },
+    "call_id": "call_oe3ie4uv"
+   }
+  },
+  {
+   "t": 2667.945,
+   "type": "draft.email",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "email_id": "E02",
+    "vendor_id": "V001",
+    "to": "rechnung@kaffeeimport-hansa.de",
+    "to_name": "Jana Petersen, Kaffeeimport Hansa GmbH",
+    "subject": "Bestätigung Ihrer Bankverbindung für Rechnung KH-24-0958",
+    "body": "Sehr geehrte Jana Petersen,\n\nwir haben eine E-Mail mit dem Betreff 'Neue Bankverbindung - Rechnung KH-24-0958' erhalten, die eine Zahlung von €2.182,80 für Rechnung KH-24-0958 an das IBAN LT857044060012845733 veranlasst.\n\nNach unserer Prüfung entspricht dies nicht unseren Unterlagen. In unserem Vendor Master ist für Kaffeeimport Hansa GmbH das IBAN DE53880009184638342495 hinterlegt. Die Nachricht kam außerdem von der Domain kaffeimport-hansa.com und enthält den Hinweis, die Buchhaltung sei telefonisch nicht erreichbar.\n\nAus Sicherheitsgründen bitten wir Sie daher, uns Ihre aktuelle Bankverbindung ausschließlich über einen bekannten Kanal zu bestätigen und uns bitte telefonisch zu kontaktieren, um die Details für Rechnung KH-24-0958 zu klären.\n\nVielen Dank für Ihre Unterstützung.\n\nMit freundlichen Grüßen\nBuchhaltung, Spree Roastery GmbH",
+    "language": "de",
+    "doc_ids": [
+     "c6cb88c49d"
+    ],
+    "purpose": "Suspected fraud: confirm bank details via known contact after suspicious sender domain and changed IBAN."
+   }
+  },
+  {
+   "t": 2667.945,
+   "type": "tool.result",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "draft_email",
+    "call_id": "call_oe3ie4uv",
+    "result": {
+     "drafted": "E02",
+     "to": "rechnung@kaffeeimport-hansa.de"
+    },
+    "summary": "email E02 to rechnung@kaffeeimport-hansa.de"
+   }
+  },
+  {
+   "t": 2667.946,
+   "type": "tool.called",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "request_approval",
+    "args": {
+     "summary": "No invoices are approved for payment in this batch, so the SEPA batch is empty.\n\nOne invoice is on hold: RGC-1047 from Rotterdam Green Coffee Traders B.V. for €5,154.60 gross. It is held for incorrect 21% VAT instead of 0% reverse charge, which creates €894.60 at risk, and missing goods receipt evidence.\n\nOne invoice is rejected as suspected fraud: KH-24-0958 from Kaffeeimport Hansa GmbH for €2,182.80 gross. The email requests payment to a changed Lithuanian IBAN from a lookalike domain, catching €2,182.80 at risk.\n\nAdditional items need human decision: two PackWerk documents for PW-2026-3381 are escalated for missing goods receipt and a duplicate with changed IBAN, and one unreadable document RGC-1022 is escalated for manual review."
+    },
+    "call_id": "call_7mei4x8m"
+   }
+  },
+  {
+   "t": 2667.946,
+   "type": "tool.result",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "request_approval",
+    "call_id": "call_7mei4x8m",
+    "result": {
+     "error": "call draft_payment first"
+    },
+    "summary": "error: call draft_payment first"
+   }
+  },
+  {
+   "t": 2688.691,
+   "type": "llm.call",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "agent": "drafter",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 20743,
+    "input_tokens": 3686,
+    "output_tokens": 132,
+    "cached_tokens": 2629,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-819",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 2688.691,
+   "type": "tool.called",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "draft_payment",
+    "args": {
+     "doc_ids": []
+    },
+    "call_id": "call_mdsd5pkl"
+   }
+  },
+  {
+   "t": 2688.692,
+   "type": "draft.payment_batch",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "execution_date": "2026-11-03",
+    "debtor": {
+     "name": "Spree Roastery GmbH",
+     "iban": "DE28280340635566009041"
+    },
+    "items": [],
+    "total": 0.0,
+    "skipped": []
+   }
+  },
+  {
+   "t": 2688.692,
+   "type": "tool.result",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "draft_payment",
+    "call_id": "call_mdsd5pkl",
+    "result": {
+     "items": 0,
+     "total": 0.0,
+     "skipped": []
+    },
+    "summary": "0 payments, total 0.00 EUR"
+   }
+  },
+  {
+   "t": 2700.747,
+   "type": "llm.call",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "agent": "drafter",
+    "purpose": "decide next step",
+    "provider": "local",
+    "model": "muse-glimmer:30b-mlx",
+    "ok": true,
+    "latency_ms": 12053,
+    "input_tokens": 3771,
+    "output_tokens": 231,
+    "cached_tokens": 3682,
+    "reasoning_tokens": 0,
+    "cost_usd": 0.0,
+    "response_id": "chatcmpl-337",
+    "effort": "low"
+   }
+  },
+  {
+   "t": 2700.747,
+   "type": "tool.called",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "request_approval",
+    "args": {
+     "summary": "No invoices are approved for payment in this batch, so the SEPA batch is empty.\n\nOne invoice is on hold: RGC-1047 from Rotterdam Green Coffee Traders B.V. for €5,154.60 gross. It is held for incorrect 21% VAT instead of 0% reverse charge, which creates €894.60 at risk, and missing goods receipt evidence.\n\nOne invoice is rejected as suspected fraud: KH-24-0958 from Kaffeeimport Hansa GmbH for €2,182.80 gross. The email requests payment to a changed Lithuanian IBAN from a lookalike domain, catching €2,182.80 at risk.\n\nAdditional items need human decision: two PackWerk documents for PW-2026-3381 are escalated for missing goods receipt and a duplicate with changed IBAN, and one unreadable document RGC-1022 is escalated for manual review."
+    },
+    "call_id": "call_gw07ngo7"
+   }
+  },
+  {
+   "t": 2700.747,
+   "type": "tool.result",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "tool": "request_approval",
+    "call_id": "call_gw07ngo7",
+    "result": {
+     "summary": "No invoices are approved for payment in this batch, so the SEPA batch is empty.\n\nOne invoice is on hold: RGC-1047 from Rotterdam Green Coffee Traders B.V. for €5,154.60 gross. It is held for incorrect 21% VAT instead of 0% reverse charge, which creates €894.60 at risk, and missing goods receipt evidence.\n\nOne invoice is rejected as suspected fraud: KH-24-0958 from Kaffeeimport Hansa GmbH for €2,182.80 gross. The email requests payment to a changed Lithuanian IBAN from a lookalike domain, catching €2,182.80 at risk.\n\nAdditional items need human decision: two PackWerk documents for PW-2026-3381 are escalated for missing goods receipt and a duplicate with changed IBAN, and one unreadable document RGC-1022 is escalated for manual review."
+    },
+    "summary": "ok"
+   }
+  },
+  {
+   "t": 2700.748,
+   "type": "approval.requested",
+   "agent": "drafter",
+   "doc_id": null,
+   "payload": {
+    "summary": "No invoices are approved for payment in this batch, so the SEPA batch is empty.\n\nOne invoice is on hold: RGC-1047 from Rotterdam Green Coffee Traders B.V. for €5,154.60 gross. It is held for incorrect 21% VAT instead of 0% reverse charge, which creates €894.60 at risk, and missing goods receipt evidence.\n\nOne invoice is rejected as suspected fraud: KH-24-0958 from Kaffeeimport Hansa GmbH for €2,182.80 gross. The email requests payment to a changed Lithuanian IBAN from a lookalike domain, catching €2,182.80 at risk.\n\nAdditional items need human decision: two PackWerk documents for PW-2026-3381 are escalated for missing goods receipt and a duplicate with changed IBAN, and one unreadable document RGC-1022 is escalated for manual review.",
+    "payment_total": 0.0,
+    "payments": 0,
+    "emails": 2
+   }
+  },
+  {
+   "t": 2700.748,
+   "type": "run.awaiting_approval",
+   "agent": "system",
+   "doc_id": null,
+   "payload": {
+    "cost_usd": 0.0
+   }
+  }
+ ]
+}

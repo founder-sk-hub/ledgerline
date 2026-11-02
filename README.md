@@ -14,15 +14,25 @@ human**. Nothing is paid or sent without approval, and every step is in a replay
 > Built entirely during the Meta Global AI Developer Hackathon (Oct 26 – Nov 4, 2026). Startup track ·
 > theme *Build for Your World*.
 
+**Try it in your browser, no install:** https://founder-sk-hub.github.io/ledgerline/ (replays of recorded real
+runs; you are the approver) · **Demo video:** see the submission page.
+
 <!-- RESULTS:START -->
 ### Results on the synthetic benchmark (recorded live runs, replayable in the app)
 
 | Engine | Docs | Anomalous docs stopped | Flag recall | Flag precision | Decision accuracy | EUR at risk caught | Agent time | Model cost | Recorded |
 |---|---|---|---|---|---|---|---|---|---|
+| Muse Glimmer · on this machine (Ollama) (`muse-glimmer:30b-mlx`) | 6 | 4/4 | 80% | 57% | 83% | EUR 4,088.90 | 45.0 min | $0.00 | 2026-11-02 |
 | Muse Spark · Meta Model API (`muse-spark-1.3`) | 32 | 12/12 | 100% | 100% | 97% | EUR 8,339.21 | 5.8 min | $1.25 | 2026-11-02 |
 
 Scored against `data/samples/ground_truth.json`, which the agent never sees. Local runs cost $0 in API fees.
 <!-- RESULTS:END -->
+
+How to read the two rows: on Meta Model API every planted problem was stopped with no false flags; the one
+"wrong" decision is a clean invoice the verifier escalated because, on a blurry phone photo, it read the IBAN check
+digits differently than the intake pass did (it asked a human instead of guessing). On the laptop, Muse Glimmer also
+stopped every bad invoice, but it is noisier: one document came back unreadable and it escalated more to a human.
+Private mode trades some autonomy for keeping every document on the machine.
 
 ---
 
@@ -32,7 +42,7 @@ Replay mode streams **recorded real runs**: every Muse Spark call in the timelin
 latency, token usage, cost and response id. You act as the approver.
 
 ```bash
-git clone https://github.com/sindakhenine/ledgerline && cd ledgerline
+git clone https://github.com/founder-sk-hub/ledgerline && cd ledgerline
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
 make demo            # -> http://localhost:8000
 ```
@@ -185,6 +195,14 @@ approval gate, SEPA export and record/replay works.
 - **Emails go only to known vendor contacts** from the master data, never to the sender of a suspicious message.
 - **Nothing is transmitted.** Ledgerline writes a SEPA file and an outbox. Uploading and sending stay human actions.
 - **Budget guard** on model spend.
+
+## Browser demo and demo video
+
+`backend/scripts/export_static.py` builds `site/`, a static version of the app (`VITE_STATIC=1`) in which the
+recorded replays, the approval gate and SEPA generation run entirely in the browser (`frontend/src/static/`, a port
+of the Python fold). It is what GitHub Pages serves. The demo video is produced by `backend/scripts/demo_video.py`,
+which drives the real app with Playwright, and `demo_voice.py`, which generates the narration with ElevenLabs. Both
+are video production only and not part of the product.
 
 ## Repository layout
 

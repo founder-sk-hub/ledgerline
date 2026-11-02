@@ -14,7 +14,7 @@ load_dotenv(ROOT / ".env")
 DATA = ROOT / "data"
 SAMPLES = DATA / "samples"
 REPLAYS = DATA / "replays"
-RUNTIME = DATA / "runtime"
+RUNTIME = Path(os.getenv("LEDGERLINE_RUNTIME", DATA / "runtime"))  # page renders, uploads, exports
 DB_PATH = Path(os.getenv("LEDGERLINE_DB", DATA / "ledgerline.db"))
 FRONTEND_DIST = ROOT / "frontend" / "dist"
 
@@ -52,6 +52,7 @@ class ProviderConfig:
     reasoning_effort: bool  # whether to send reasoning_effort
     open_weights: bool
     local: bool = False  # runs on this machine: no document leaves it
+    effort_override: str | None = None  # one reasoning level for every agent on this engine
 
     @property
     def available(self) -> bool:
@@ -119,9 +120,10 @@ def providers() -> dict[str, ProviderConfig]:
             api_key="ollama",  # Ollama needs no key; the OpenAI client wants a non-empty string
             developer_role="system",
             structured=_env("LOCAL_STRUCTURED", "prompt"),  # Ollama's MLX engine has no constrained decoding
-            reasoning_effort=False,
+            reasoning_effort=True,
             open_weights=True,
             local=True,
+            effort_override=_env("LOCAL_EFFORT", "low"),  # Glimmer defaults to long "high" reasoning; low is ~3x faster
         ),
     }
 

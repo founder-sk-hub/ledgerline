@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bot, CheckCircle2, ChevronRight, Cpu, Download, FileSearch, Mic, ScanSearch, ShieldCheck, Wrench, XCircle } from "lucide-react";
-import { pageUrl, type RunDoc, type RunState, type Step } from "../api";
+import { api, fileUrl, pageUrl, type RunDoc, type RunState, type Step } from "../api";
 import { go } from "../App";
 import { Card, Empty, FlagChip, KindIcon, StatusChip, eur, int, secs, usd } from "../components/ui";
 
@@ -60,7 +60,7 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
   const ver = d.verification;
 
   useEffect(() => {
-    if (d.kind === "email") fetch(`/api/docs/${d.doc_id}/text`).then((r) => r.json()).then((j) => setEmailText(j.text));
+    if (d.kind === "email") api.docText(d.doc_id).then((j) => setEmailText(j.text));
   }, [d.doc_id, d.kind]);
 
   const boxes: Box[] = useMemo(() => {
@@ -82,13 +82,13 @@ function DocAudit({ d, state }: { d: RunDoc; state: RunState }) {
                 {i + 1}
               </button>
             ))}
-          <a href={`/api/docs/${d.doc_id}/file`} className="text-muted hover:text-ink" title="Original file">
+          <a href={fileUrl(d.doc_id)} className="text-muted hover:text-ink" title="Original file">
             <Download size={15} />
           </a>
         </div>
         {d.kind === "audio" && (
           <div className="space-y-3 p-4">
-            <audio controls src={`/api/docs/${d.doc_id}/file`} className="w-full" />
+            <audio controls src={fileUrl(d.doc_id)} className="w-full" />
             <div className="flex items-center gap-1.5 text-xs font-medium text-meta">
               <Mic size={13} /> Transcribed by Muse Voice Transcribe
             </div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { staticApi } from "./static/server";
 
 export type Provider = {
   key: "meta" | "private" | "local";
@@ -260,7 +261,9 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 const post = <T,>(path: string, body?: unknown) =>
   req<T>(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body ?? {}) });
 
-export const api = {
+export const STATIC = import.meta.env.VITE_STATIC === "1";
+
+const httpApi = {
   config: () => req<Config>("/api/config"),
   batch: (id: string) => req<{ batch_id: string; documents: Doc[] }>(`/api/batches/${id}`),
   upload: (files: File[]) => {
@@ -276,9 +279,14 @@ export const api = {
     post(`/api/runs/${id}/approvals`, { item, decision, note }),
   execute: (id: string) => post<RunState["executed"]>(`/api/runs/${id}/execute`),
   record: (id: string, name: string) => post(`/api/runs/${id}/record`, { name }),
+  docText: (id: string) => req<{ text: string }>(`/api/docs/${id}/text`),
 };
 
-export const pageUrl = (docId: string, n: number) => `/api/docs/${docId}/pages/${n}`;
+export const api: typeof httpApi = STATIC ? (staticApi as unknown as typeof httpApi) : httpApi;
+
+export const pageUrl = (docId: string, n: number) => (STATIC ? staticApi.pageUrl(docId, n) : `/api/docs/${docId}/pages/${n}`);
+export const fileUrl = (docId: string) => (STATIC ? staticApi.fileUrl(docId) : `/api/docs/${docId}/file`);
+export const exportUrl = (runId: string, name: string) => (STATIC ? staticApi.exportUrl(runId, name) : `/api/runs/${runId}/exports/${name}`);
 
 /** Folded run state + live event stream (SSE), refetching the fold at most every 350 ms. */
 export function useRun(runId: string | null) {
@@ -309,6 +317,19 @@ export function useRun(runId: string | null) {
       .run(runId)
       .then((s) => alive && setState(s))
       .catch((e: Error) => alive && setError(e.message));
+    const onEvent = (ev: RunEvent) => {
+      setEvents((prev) => (prev.length && prev[prev.length - 1].seq >= ev.seq ? prev : [...prev, ev]));
+      refresh();
+    };
+    if (STATIC) {
+      const unsub = staticApi.subscribe(runId, onEvent);
+      return () => {
+        alive = false;
+        unsub();
+        if (timer.current) window.clearTimeout(timer.current);
+        timer.current = null;
+      };
+    }
     const es = new EventSource(`/api/runs/${runId}/events`);
     es.onerror = () => {
       if (es.readyState === EventSource.CLOSED) es.close();

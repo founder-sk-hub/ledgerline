@@ -27,4 +27,4 @@ every number on screen comes from a real run. Speak calmly; the screen does the 
 >
 > 32 messy docs → 12 problems caught → €8.3k at risk, in 3 minutes.
 >
-> Built this week for the @AIatMeta hackathon. Code: github.com/sindakhenine/ledgerline
+> Built this week for the @AIatMeta hackathon. Code: github.com/founder-sk-hub/ledgerline

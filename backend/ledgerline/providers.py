@@ -83,6 +83,7 @@ class Provider:
                 js = response_format["json_schema"]
                 response_format = {**response_format, "json_schema": {**js, "schema": strictify(js["schema"])}}
             kwargs["response_format"] = response_format
+        effort = self.cfg.effort_override or effort
         if effort and self.cfg.reasoning_effort:
             kwargs["reasoning_effort"] = effort
 

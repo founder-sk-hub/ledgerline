@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, ChevronDown, Download, Mail, ShieldAlert, X } from "lucide-react";
-import { api, type ApprovalItem, type Email, type PaymentItem, type RunState } from "../api";
+import { api, exportUrl, type ApprovalItem, type Email, type PaymentItem, type RunState } from "../api";
 import { go } from "../App";
 import { Card, Empty, FlagChip, eur } from "../components/ui";
 
@@ -162,7 +162,8 @@ export default function Approvals({ state, reload }: { state: RunState; reload: 
               </div>
               {state.executed.sepa_file && (
                 <a
-                  href={`/api/runs/${runId}/exports/${state.executed.sepa_file}`}
+                  href={exportUrl(runId, state.executed.sepa_file)}
+                  download="ledgerline-pain001.xml"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white"
                 >
                   <Download size={15} /> SEPA file (pain.001)

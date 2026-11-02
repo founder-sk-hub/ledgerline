@@ -11,3 +11,5 @@ data/runtime/
 .DS_Store
 .claude/
 *.tsbuildinfo
+*.mp4
+site/
