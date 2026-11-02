@@ -10,6 +10,7 @@ Video production only; not part of the product. Output: docs/video/ledgerline-de
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -18,7 +19,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / "data" / "runtime" / "video"
-VOICE = WORK / "v2"
+NARRATION = Path(os.environ.get("DEMO_NARRATION", ROOT / "docs" / "video" / "narration_v3.json"))
+VOICE = WORK / json.loads(NARRATION.read_text()).get("out", "v3")  # clips made by demo_voice.py from that file
 OUT = ROOT / "docs" / "video" / "ledgerline-demo.mp4"
 BASE = "http://localhost:8020"
 VW, VH = 1920, 1080  # full-HD capture; the app is laid out 1280 px wide and scaled 1.5x to fill the frame

@@ -1,0 +1,53 @@
+{
+  "voice": "Brian (ElevenLabs premade narrator voice)",
+  "voice_id": "nPczCjzI2devNBz1zQrb",
+  "model": "eleven_multilingual_v2",
+  "out": "v3",
+  "note": "Narration for the demo video only; not part of the product. Numbers come from the recorded live run.",
+  "lines": [
+    {
+      "id": "hook",
+      "text": "Every month, small food businesses get a pile of supplier bills: PDFs, phone photos, emails, even voice notes from staff. Checking them takes hours, and mistakes cost real money."
+    },
+    {
+      "id": "intro",
+      "text": "Meet Ledgerline, built by Sinda Khenine from Rothenburg ob der Tauber, on Meta's Muse models. It checks every bill against the business's own records, and it never pays anything on its own."
+    },
+    {
+      "id": "read",
+      "text": "Muse Spark reads each document, German or English, crooked photos, even a stamped copy, and plans the work. Everything you see is from a real recorded run."
+    },
+    {
+      "id": "sam",
+      "text": "Here's a photo of a coffee delivery. Muse Spark decides what to count, and SAM 3.1 finds every sack: nine. But the invoice charges for ten. Ledgerline holds it and asks the supplier for a credit."
+    },
+    {
+      "id": "memo",
+      "text": "This is a voice memo from the cafe manager: only twenty-eight cans of milk arrived. Muse Voice Transcribe turns it into evidence, and the milk invoice is held too."
+    },
+    {
+      "id": "fraud",
+      "text": "This one is dangerous: an email asking us to pay a new bank account. The domain is one letter off. Ledgerline rejects it and warns the real supplier."
+    },
+    {
+      "id": "verify",
+      "text": "Every decision is checked a second time against the original, with the evidence highlighted. If it isn't sure, a human decides."
+    },
+    {
+      "id": "approve",
+      "text": "Then it stops. It prepares the bank transfer and the supplier emails, but nothing happens until a person approves."
+    },
+    {
+      "id": "private",
+      "text": "For businesses that can't send invoices to the cloud, the same agent runs on Muse Glimmer, right on a laptop."
+    },
+    {
+      "id": "close",
+      "text": "In this demo month: thirty-two documents, all twelve planted problems stopped, over eight thousand euros flagged at risk, in six minutes, for about one euro of AI."
+    },
+    {
+      "id": "end",
+      "text": "Ledgerline. Let the agent do the checking. You do the approving."
+    }
+  ]
+}

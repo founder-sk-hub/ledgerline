@@ -19,7 +19,8 @@ load_dotenv(ROOT / ".env")
 args = [a for a in sys.argv[1:] if not a.startswith("--only")]
 only = next((a.split("=", 1)[1].split(",") for a in sys.argv[1:] if a.startswith("--only=")), None)
 spec = json.loads(Path(args[0] if args else ROOT / "docs" / "video" / "narration_v2.json").read_text())
-VOICE = os.environ.get("ELEVENLABS_VOICE_ID") or spec.get("voice_id") or "JBFqnCBsd6RMkjVDRZzb"  # fallback: George
+# A public premade voice is named in the spec; a private cloned voice comes from .env instead.
+VOICE = spec.get("voice_id") or os.environ.get("ELEVENLABS_VOICE_ID") or "JBFqnCBsd6RMkjVDRZzb"  # fallback: George
 OUT = ROOT / "data" / "runtime" / "video" / spec.get("out", "")
 OUT.mkdir(parents=True, exist_ok=True)
 spec["lines"] = [l for l in spec["lines"] if not only or l["id"] in only]
