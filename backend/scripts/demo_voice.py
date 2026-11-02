@@ -1,6 +1,6 @@
 """Generate the demo-video narration with ElevenLabs (video production only, not part of the product).
 
-    .venv/bin/python backend/scripts/demo_voice.py      # needs ELEVENLABS_API_KEY in .env (TTS-only key)
+    .venv/bin/python backend/scripts/demo_voice.py [narration.json] [--only id,id]   # needs ELEVENLABS_API_KEY
 """
 
 import json
@@ -13,12 +13,16 @@ import httpx
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "data" / "runtime" / "video"
-MAX_CHARS = 850  # hard guard on credits (Flash v2.5 bills ~0.5 credit per character)
-VOICE = "JBFqnCBsd6RMkjVDRZzb"  # George
+MAX_CHARS = 2100  # hard guard on credits per run (multilingual v2 bills ~1 credit per character)
 
 load_dotenv(ROOT / ".env")
-spec = json.loads((ROOT / "docs" / "video" / "narration.json").read_text())
+args = [a for a in sys.argv[1:] if not a.startswith("--only")]
+only = next((a.split("=", 1)[1].split(",") for a in sys.argv[1:] if a.startswith("--only=")), None)
+spec = json.loads(Path(args[0] if args else ROOT / "docs" / "video" / "narration.json").read_text())
+VOICE = spec.get("voice_id", "JBFqnCBsd6RMkjVDRZzb")  # default: George
+OUT = ROOT / "data" / "runtime" / "video" / spec.get("out", "")
+OUT.mkdir(parents=True, exist_ok=True)
+spec["lines"] = [l for l in spec["lines"] if not only or l["id"] in only]
 lines = [l for l in spec["lines"] if not (OUT / f"{l['id']}.mp3").exists()]
 total = sum(len(l["text"]) for l in lines)
 if total > MAX_CHARS:
@@ -30,7 +34,8 @@ for l in spec["lines"]:
     path = OUT / f"{l['id']}.mp3"
     if not path.exists():
         body = {"text": l["text"], "model_id": spec["model"],
-                "voice_settings": {"stability": 0.5, "similarity_boost": 0.8, "style": 0.15, "speed": 1.0}}
+                "voice_settings": {"stability": 0.45, "similarity_boost": 0.85, "style": 0.2, "speed": 1.0,
+                                   "use_speaker_boost": True}}
         if prev:
             body["previous_text"] = prev
         r = httpx.post(f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE}?output_format=mp3_44100_128",
