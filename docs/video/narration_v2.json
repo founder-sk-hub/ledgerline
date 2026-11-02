@@ -5,16 +5,49 @@
   "out": "v2",
   "note": "Narration for the demo video only; not part of the product. Numbers come from the recorded live run.",
   "lines": [
-    {"id": "hook", "text": "Hi, I'm Sinda, a founder in Berlin. Every month, small businesses like a local coffee roaster get a pile of bills: PDFs, phone photos, emails, even voice notes from staff. Checking them takes a day, and mistakes cost real money."},
-    {"id": "intro", "text": "Ledgerline is an AI bookkeeper built on Meta's Muse models. It checks every bill against your own records, and it never pays anything without you."},
-    {"id": "read", "text": "Muse Spark reads each document, German or English, crooked photos, even a stamped copy, and plans the work. Everything you see is from a real recorded run."},
-    {"id": "sam", "text": "Here's a photo of a coffee delivery. Muse Spark decides what to count, and SAM 3.1 finds every sack: nine. But the invoice charges for ten. Ledgerline holds it and asks the supplier for a credit."},
-    {"id": "memo", "text": "This is a voice memo from the cafe manager: only twenty-eight cans of milk arrived. Muse Voice Transcribe turns it into evidence, and the milk invoice is held too."},
-    {"id": "fraud", "text": "This one is dangerous: an email asking us to pay a new bank account. The domain is one letter off. Ledgerline rejects it and warns the real supplier."},
-    {"id": "verify", "text": "Every decision is checked a second time against the original, with the evidence highlighted. If it isn't sure, a human decides."},
-    {"id": "approve", "text": "Then it stops. It prepares the bank transfer and the supplier emails, but nothing happens until I approve."},
-    {"id": "private", "text": "For businesses that can't send invoices to the cloud, the same agent runs on Muse Glimmer, right here on my laptop."},
-    {"id": "close", "text": "This month: thirty-two documents, twelve problems caught, over eight thousand euros protected, in six minutes, for about one euro of AI."},
-    {"id": "end", "text": "Ledgerline. Let the agent do the checking. You do the approving."}
+    {
+      "id": "hook",
+      "text": "Hi, I'm Sinda, a founder from Rothenburg ob der Tauber. Every month, small businesses like a local coffee roaster get a pile of bills: PDFs, phone photos, emails, even voice notes from staff. Checking them takes a day, and mistakes cost real money."
+    },
+    {
+      "id": "intro",
+      "text": "Ledgerline is an AI bookkeeper built on Meta's Muse models. It checks every bill against your own records, and it never pays anything without you."
+    },
+    {
+      "id": "read",
+      "text": "Muse Spark reads each document, German or English, crooked photos, even a stamped copy, and plans the work. Everything you see is from a real recorded run."
+    },
+    {
+      "id": "sam",
+      "text": "Here's a photo of a coffee delivery. Muse Spark decides what to count, and SAM 3.1 finds every sack: nine. But the invoice charges for ten. Ledgerline holds it and asks the supplier for a credit."
+    },
+    {
+      "id": "memo",
+      "text": "This is a voice memo from the cafe manager: only twenty-eight cans of milk arrived. Muse Voice Transcribe turns it into evidence, and the milk invoice is held too."
+    },
+    {
+      "id": "fraud",
+      "text": "This one is dangerous: an email asking us to pay a new bank account. The domain is one letter off. Ledgerline rejects it and warns the real supplier."
+    },
+    {
+      "id": "verify",
+      "text": "Every decision is checked a second time against the original, with the evidence highlighted. If it isn't sure, a human decides."
+    },
+    {
+      "id": "approve",
+      "text": "Then it stops. It prepares the bank transfer and the supplier emails, but nothing happens until I approve."
+    },
+    {
+      "id": "private",
+      "text": "For businesses that can't send invoices to the cloud, the same agent runs on Muse Glimmer, right here on my laptop."
+    },
+    {
+      "id": "close",
+      "text": "This month: thirty-two documents, twelve problems caught, over eight thousand euros protected, in six minutes, for about one euro of AI."
+    },
+    {
+      "id": "end",
+      "text": "Ledgerline. Let the agent do the checking. You do the approving."
+    }
   ]
 }
