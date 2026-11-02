@@ -446,7 +446,8 @@ def memo_clip() -> np.ndarray:
     k = int(0.03 * SR)
     x[:k] *= np.linspace(0, 1, k)
     x[-k:] *= np.linspace(1, 0, k)
-    return x * 10 ** (-14 / 20) / np.sqrt((x[np.abs(x) > 0.01] ** 2).mean())
+    x *= 10 ** (-14 / 20) / np.sqrt((x[np.abs(x) > 0.01] ** 2).mean())
+    return x * min(1.0, 0.95 / np.abs(x).max())  # keep the peaks under full scale
 
 
 def voice() -> np.ndarray:
@@ -485,7 +486,7 @@ def write_wav(path: Path, x: np.ndarray) -> None:
         w.setnchannels(2)
         w.setsampwidth(2)
         w.setframerate(SR)
-        w.writeframes((x * 32767).astype("<i2").tobytes())
+        w.writeframes((np.clip(x, -1, 1) * 32767).astype("<i2").tobytes())
 
 
 def flash_time(video: Path) -> float:
