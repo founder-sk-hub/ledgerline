@@ -306,7 +306,7 @@ def record() -> None:
         d.go(f"#/run/{run_id}/metrics")
         end = d.say("close")
         d.focus(page.locator("text=Time saved").first.locator("xpath=ancestor::div[contains(@class,'grid')][1]"), 1.1)
-        d.caption("<b>12 / 12</b> planted problems stopped · <b>€8,339</b> flagged at risk · <b>2.7 min</b> · <b>$1.14</b> of model calls")
+        d.caption("<b>12 / 12</b> planted problems stopped · <b>€8,339</b> flagged at risk · <b>2.7 min</b> · <b>$1.10</b> of model calls")
         d.wait(5.0)
         d.focus(section("Accuracy on the synthetic benchmark"), 1.1)
         d.until(end + 0.3)

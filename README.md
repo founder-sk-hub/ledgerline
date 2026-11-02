@@ -23,14 +23,16 @@ runs; you are the approver) · **Demo video (3 min):** https://youtu.be/Ha7zp2gp
 | Engine | Docs | Anomalous docs stopped | Flag recall | Flag precision | Decision accuracy | EUR at risk caught | Agent time | Model cost | Recorded |
 |---|---|---|---|---|---|---|---|---|---|
 | Muse Glimmer · on this machine (Ollama) (`muse-glimmer:30b-mlx`) | 6 | 4/4 | 80% | 57% | 83% | EUR 4,088.90 | 45.0 min | $0.00 | 2026-11-02 |
-| Muse Spark · Meta Model API (`muse-spark-1.3`) | 32 | 12/12 | 100% | 100% | 97% | EUR 8,339.21 | 5.8 min | $1.25 | 2026-11-02 |
+| Muse Spark · Meta Model API (`muse-spark-1.3`) | 32 | 12/12 | 100% | 94% | 97% | EUR 8,339.21 | 2.7 min | $1.10 | 2026-11-02 |
 
 Scored against `data/samples/ground_truth.json`, which the agent never sees. Local runs cost $0 in API fees.
 <!-- RESULTS:END -->
 
-How to read the two rows: on Meta Model API every planted problem was stopped with no false flags; the one
-"wrong" decision is a clean invoice the second pass escalated because, on a blurry phone photo, it read the IBAN
-check digits differently than the intake pass did (it asked a human instead of guessing). On the laptop, Muse
+How to read the two rows: on Meta Model API every planted problem was stopped. The one extra flag is a real
+warning sign the answer key doesn't list: the fake bank-change email pushes for payment by a deadline and says the
+sender can't be reached by phone. The one "wrong" decision is a clean invoice sent to a human: on a phone photo
+the IBAN check digits read as 46 instead of 26. The checksum marks that as a misreading, but the second pass would
+not sign off on it and asked a human instead of guessing. On the laptop, Muse
 Glimmer stopped all four problem documents in its six-document subset, but the coffee invoice only because its
 extraction failed and it went to a human; it also raised more false flags. Private mode trades accuracy and speed
 for keeping every document on the machine.
@@ -40,8 +42,9 @@ for keeping every document on the machine.
 ## Try it in 2 minutes (no API key)
 
 Replay mode streams **recorded real runs**: every model call in the timeline is from a live run, with its recorded
-latency, token usage, cost and response id. You act as the approver. (In these recordings a call's latency includes
-waiting for a free slot while six calls run in parallel; the code now times the model call alone.)
+latency, token usage, cost and response id. You act as the approver. (In the Muse Glimmer recording a call's latency
+includes waiting for a free slot while six calls run in parallel; the Muse Spark recording and the current code
+time the model call alone.)
 
 ```bash
 git clone https://github.com/founder-sk-hub/ledgerline && cd ledgerline
@@ -159,9 +162,8 @@ used for product improvement; the demo data is synthetic for that reason.
 
 To run the local engine: install [Ollama](https://ollama.com) ≥ 0.32.7, then `ollama pull muse-glimmer:30b-mlx`
 (19 GB; fits a 32 GB+ Apple-silicon Mac) and choose *Private · on this laptop* in the UI, or
-`record.py --provider local`. The trade-off is speed: in the recorded runs a one-page intake call took about
-2.5 minutes with Glimmer on an M3 Pro (36 GB) and 7–30 seconds on Meta Model API; the six-document local run took
-45 minutes. That suits an overnight batch. The recorded private-mode replay covers six documents, compared with 32
+`record.py --provider local`. The trade-off is speed: the six-document local run took 45 minutes on an M3 Pro
+(36 GB), while the 32-document Meta Model API run took under three minutes. That suits an overnight batch. The recorded private-mode replay covers six documents, compared with 32
 in the standard run; these are not equivalent benchmarks.
 Ollama's MLX engine has no constrained decoding, so the local engine gets the JSON
 schema in its instructions and its output is parsed strictly, with one retry.
@@ -174,17 +176,18 @@ schema in its instructions and its output is parsed strictly, with one retry.
 - Backend: Python, FastAPI, Uvicorn, `openai` SDK (as an OpenAI-compatible client for Meta / Baseten endpoints),
   pypdfium2 (PDF rendering), Pillow, NumPy, sse-starlette, SQLite.
 - Frontend: React, Vite, Tailwind CSS, lucide-react icons, Inter / JetBrains Mono (Google Fonts).
-- Dev only: fpdf2 and macOS `say` (sample generation), pytest. Demo video only: Playwright, ffmpeg and ElevenLabs
-  text-to-speech (see Disclosures).
+- Dev only: fpdf2 (sample generation), ElevenLabs text-to-speech (the synthetic voice memo), pytest. Demo video
+  only: Playwright, ffmpeg and ElevenLabs text-to-speech (see Disclosures).
 
 ## Synthetic data and benchmark
 
 Everything in `data/samples` is **synthetic**: Spree Roastery GmbH, a fictional Berlin coffee roaster, with eight
 invented vendors, five POs, four contracts, a paid-invoice history, and a 32-document October batch in German and
 English. The batch includes PDFs, phone photos, a stamped scan, thermal receipts, emails, a staff voice memo
-(synthetic voice from macOS text-to-speech) and a delivery photo (generated with Meta's Muse Image). IBANs are
-checksum-valid but random. `backend/scripts/generate_samples.py` regenerates the batch on macOS (it uses system
-fonts and `say`, and reuses the committed Muse Image photo).
+(a synthetic German voice from ElevenLabs text-to-speech, `make_voice_memo.py`) and a delivery photo (generated with
+Meta's Muse Image).
+IBANs are checksum-valid but random. `backend/scripts/generate_samples.py` regenerates the batch on macOS (it uses system
+fonts and reuses the committed voice memo and Muse Image photo).
 
 `data/samples/ground_truth.json` lists the planted anomalies. It is **never shown to the agent**. It is only used
 afterwards to score a run (Metrics tab, and `record.py` output): flag precision and recall, decision accuracy, and
@@ -238,10 +241,10 @@ data/replays/         recorded real runs (replay mode)
 
 - Built from scratch during the hackathon window (Oct 26 – Nov 4, 2026); no pre-existing code. The first commit
   (Nov 2) contains the first working version written that day.
-- The recorded replays were made before later wording, verifier and export changes; re-scoring them under the
-  current rules gives the same outcomes.
-- Demo video narration: ElevenLabs text-to-speech in the founder's own cloned voice. It is video production only and
-  not part of the product.
+- The Muse Spark replay was recorded with the current code. The Muse Glimmer replay was recorded before later
+  wording, verifier and export changes; re-scoring it under the current rules gives the same outcomes.
+- Demo video narration: ElevenLabs text-to-speech (the "Brian" narrator voice). The sample batch's staff voice
+  memo is also ElevenLabs text-to-speech. Neither is part of the product's runtime.
 - Development used Claude and Codex. The event's [coding-assistant clarification](https://discord.com/channels/1557169028080869426/1566625461319106610/1566625482143699178)
   permits those development tools; runtime model calls must use Meta models.
 - All demo data is synthetic and labelled as such. Ledgerline is a demo, not tax or legal advice. VAT rules cover the

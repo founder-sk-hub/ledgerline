@@ -25,8 +25,10 @@ It holds or rejects what's wrong, drafts a SEPA payment file and supplier emails
 approve. Every model call, tool result and decision is logged and can be replayed.
 
 In a recorded run on 32 synthetic documents (a fictional coffee roaster), it stopped all 12 planted problem
-documents with 100% flag precision and recall and 31/32 correct decisions. It flagged EUR 8,339 at risk in
-5.8 minutes for $1.25 of model calls. That is one synthetic scenario, not measured customer results.
+documents (flag recall 100%, precision 94%) and made 31/32 correct decisions. It flagged EUR 8,339 at risk in
+2.7 minutes for $1.10 of model calls. The one extra flag is a real warning sign the answer key doesn't list: the
+fake bank-change email pushes for payment by a deadline and says the sender can't be reached by phone. That is
+one synthetic scenario, not measured customer results.
 
 Try it in the browser (replays of recorded runs, you are the approver): https://founder-sk-hub.github.io/ledgerline/
 
