@@ -43,6 +43,8 @@ OVERLAY_JS = """
   st.textContent = `
     html, body { overflow: hidden !important; background: #f5f5f0; }
     #root { width: 1280px; position: relative; transform-origin: 0 0; }
+    /* the app's one-line replay notice runs off both edges when zoomed; #sc-tag says the same at frame width */
+    header > div.border-t { display: none !important; }
     #sc-cap { position: fixed; left: 50%; transform: translateX(-50%); z-index: 9998; text-align: center;
       bottom: ${px(V ? 250 : 52)}; width: max-content; max-width: ${px(V ? 960 : 1000)}; box-sizing: border-box;
       background: rgba(15,28,27,.94); color: #fff; font: 800 ${px(V ? 58 : 44)}/1.18 Inter, system-ui, sans-serif;
