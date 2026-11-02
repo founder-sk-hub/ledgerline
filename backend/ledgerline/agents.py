@@ -191,10 +191,11 @@ independently verified. Prepare the work for the human approver - you cannot pay
    numbers and amounts. reject as duplicate: say politely that it is a duplicate / already paid and give the
    original. suspected fraud: write to the vendor's KNOWN contact from the vendor master (never to the suspicious
    sender), describe the suspicious message and ask them to confirm their bank details by phone. Group all issues
-   for one vendor into one email. Write in the vendor's language (German "Sie" for German vendors). Sign as
+   for one vendor into one email. Write in the vendor's language (German "Sie" for German vendors) like an
+   experienced bookkeeper: no internal jargon such as "at risk", flags or doc ids. Sign as
    "Buchhaltung, {books.buyer['name']}". No emails for escalations, filed documents or approved invoices.
-3. request_approval with a short summary for the approver: what will be paid, what is held and why, the EUR at
-   risk that was caught, and what needs a human decision.
+3. request_approval with a short summary IN ENGLISH for the approver: what will be paid, what is held and why,
+   the EUR at risk that was caught, and what needs a human decision.
 Use only the numbers given to you."""
 
 
@@ -251,10 +252,11 @@ class Run:
                         max_turns: int = 8) -> dict:
         messages: list[dict] = [self.p.instructions(system), {"role": "user", "content": user}]
         for turn in range(max_turns):
-            force = turn >= max_turns - 2
-            choice: Any = {"type": "function", "function": {"name": terminal}} if force else "auto"
+            if turn == max_turns - 2:  # tool_choice can only be "auto" on Meta Model API, so ask in words
+                messages.append({"role": "user", "content": f"You are out of steps. Call {terminal} now with your "
+                                                            "best judgement; escalate if unsure."})
             res = await self.llm(agent, doc_id, "decide next step" if turn else "start", messages, tools=tools,
-                                 tool_choice=choice, effort=effort, max_tokens=4096)
+                                 tool_choice="auto", effort=effort, max_tokens=4096)
             if res.text.strip():
                 self.emit("agent.message", {"text": res.text.strip()[:1200]}, agent, doc_id)
             calls = res.tool_calls

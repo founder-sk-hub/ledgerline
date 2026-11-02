@@ -33,6 +33,7 @@ PRICES = {
     "muse-spark-1.1": {"input": 1.25, "cached": 0.15, "output": 4.25},
     "muse-wonder-1.0": {"input": 4.00, "cached": 0.20, "output": 20.00},
     "meta-models/muse-spark-open": {"input": 1.25, "cached": 0.15, "output": 4.25},
+    "meta-models/muse-spark-open-1026": {"input": 1.25, "cached": 0.15, "output": 4.25},
 }
 DEFAULT_PRICE = {"input": 1.25, "cached": 0.15, "output": 4.25}
 
@@ -63,7 +64,7 @@ class ProviderConfig:
 
 def providers() -> dict[str, ProviderConfig]:
     meta_model = _env("META_MODEL", "muse-spark-1.3")
-    private_model = _env("PRIVATE_MODEL", "meta-models/muse-spark-open")
+    private_model = _env("PRIVATE_MODEL", "meta-models/muse-spark-open-1026")
     return {
         "meta": ProviderConfig(
             key="meta",

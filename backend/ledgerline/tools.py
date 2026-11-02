@@ -551,10 +551,9 @@ INVESTIGATOR_TOOLS = [
 ]
 
 DRAFTER_TOOLS = [
-    fn("draft_payment", "Draft the SEPA payment batch from approved documents. Credit notes net against the same "
-       "vendor. Always pays to the vendor-master IBAN.", {
+    fn("draft_payment", "Draft the SEPA payment batch from approved documents, executed on the next business day. "
+       "Credit notes net against the same vendor. Always pays to the vendor-master IBAN.", {
            "doc_ids": {"type": "array", "items": {"type": "string"}},
-           "execution_date": {"type": "string", "description": "YYYY-MM-DD"},
        }, ["doc_ids"]),
     fn("draft_email", "Draft (not send) an email to a vendor's known contact from the vendor master.", {
         "vendor_id": {"type": "string"},

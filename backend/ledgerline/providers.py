@@ -75,10 +75,13 @@ class Provider:
                    max_tokens: int = 4096) -> LLMResult:
         kwargs: dict[str, Any] = {"model": self.cfg.model, "messages": messages, "max_completion_tokens": max_tokens}
         if tools:
-            kwargs["tools"] = tools
+            kwargs["tools"] = strict_tools(tools)
             if tool_choice is not None:
                 kwargs["tool_choice"] = tool_choice
         if response_format:
+            if response_format.get("type") == "json_schema":
+                js = response_format["json_schema"]
+                response_format = {**response_format, "json_schema": {**js, "schema": strictify(js["schema"])}}
             kwargs["response_format"] = response_format
         if effort and self.cfg.reasoning_effort:
             kwargs["reasoning_effort"] = effort
@@ -99,8 +102,8 @@ class Provider:
             except openai.BadRequestError as e:
                 # Degrade gracefully on parameters a given server doesn't accept.
                 msg = str(e).lower()
-                if "tool_choice" in kwargs and isinstance(kwargs["tool_choice"], dict) and "tool_choice" in msg:
-                    kwargs["tool_choice"] = "required"
+                if kwargs.get("tool_choice") not in (None, "auto") and "tool_choice" in msg:
+                    kwargs["tool_choice"] = "auto"  # Meta Model API only accepts "auto"
                     continue
                 if "reasoning_effort" in kwargs and "reasoning" in msg:
                     kwargs.pop("reasoning_effort")
@@ -139,6 +142,24 @@ def parse_json_loose(text: str) -> Any:
             except json.JSONDecodeError:
                 continue
     raise ValueError("no JSON object found in model output")
+
+
+def strictify(schema: Any) -> Any:
+    """Every object closed and fully required. Muse Spark's constrained decoding can invent keys
+    for optional properties, so absent values are expressed as "" / 0 / [] instead."""
+    if isinstance(schema, dict):
+        out = {k: strictify(v) for k, v in schema.items()}
+        if out.get("type") == "object" and "properties" in out:
+            out["additionalProperties"] = False
+            out["required"] = list(out["properties"])
+        return out
+    if isinstance(schema, list):
+        return [strictify(s) for s in schema]
+    return schema
+
+
+def strict_tools(tools: list[dict]) -> list[dict]:
+    return [{**t, "function": {**t["function"], "parameters": strictify(t["function"]["parameters"])}} for t in tools]
 
 
 def structured_request(provider: Provider, name: str, schema: dict) -> dict:
