@@ -8,9 +8,9 @@ Paste each block into the matching field.
 
 **Public GitHub Repository:** https://github.com/founder-sk-hub/ledgerline
 
-**3-Minute Demo Video:** https://youtu.be/Ha7zp2gprn0
+**3-Minute Demo Video:** https://youtu.be/OqIanQUlIBE
 
-**X post link (optional, only for the Most Viral bonus prize):** leave empty if you don't post on X
+**X post link (optional, only for the Most Viral bonus prize):** paste the link to your post (from your own X account), or leave empty
 
 ---
 
