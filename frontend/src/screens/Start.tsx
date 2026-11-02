@@ -71,7 +71,7 @@ export default function Start({ config, runs }: { config: Config | null; runs: R
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
             <div>
               <div className="text-sm font-semibold">
-                {batch?.batch_id === "sample" ? "Sample batch · Spree Roastery GmbH, Berlin · October" : `Uploaded batch ${batch?.batch_id ?? ""}`}
+                {!batch ? "Loading the sample batch…" : batch.batch_id === "sample" ? "Sample batch · Spree Roastery GmbH, Berlin · October" : `Uploaded batch ${batch.batch_id}`}
               </div>
               <div className="text-xs text-muted">
                 {batch ? `${batch.documents.length} documents` : "…"}
