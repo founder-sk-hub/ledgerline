@@ -13,3 +13,4 @@ data/runtime/
 *.tsbuildinfo
 *.mp4
 site/
+docs/video/*.wav

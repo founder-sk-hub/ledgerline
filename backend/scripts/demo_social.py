@@ -1,6 +1,7 @@
 """Short social cut for X: 1080x1920 (vertical) and 1080x1080 (square), real app footage only.
 
     .venv/bin/python backend/scripts/demo_social.py [vertical|square] [--stills]   # needs the app on :8020
+    .venv/bin/python backend/scripts/demo_social.py --voice-only   # same cuts with only the voice memo
 
 Video production only; not part of the product. Each format plays a fresh replay of the recorded Muse Spark run and
 films one short shot per step with Playwright. Captions and red highlights are drawn on the page, so they are burned
@@ -432,14 +433,11 @@ def music(rng: np.random.Generator) -> np.ndarray:
     return mix[: int(TOTAL * SR)]
 
 
-def soundtrack() -> np.ndarray:
-    mix = music(np.random.default_rng(7))
-    mix *= 10 ** (-19 / 20) / np.sqrt((mix ** 2).mean())  # music bed around -19 dBFS RMS
-    # duck the music under the voice memo, then lay the memo on top, clearly louder
-    t = np.arange(len(mix)) / SR
-    a, b = STARTS["memo"] + 0.05, STARTS["memo"] + LENGTHS["memo"] - 0.2
-    gain = np.interp(t, [0, a - 0.12, a, b, b + 0.25, TOTAL], [1, 1, 0.22, 0.22, 1, 1])
-    mix *= gain[:, None]
+VOICE_AT = STARTS["memo"] + 0.25  # where the memo excerpt starts in the cut
+
+
+def memo_clip() -> np.ndarray:
+    """The staff voice memo excerpt (mono, SR), levelled to about -14 dBFS RMS."""
     with wave.open(str(MEMO)) as w:
         sr = w.getframerate()
         x = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(float) / 32768
@@ -448,12 +446,38 @@ def soundtrack() -> np.ndarray:
     k = int(0.03 * SR)
     x[:k] *= np.linspace(0, 1, k)
     x[-k:] *= np.linspace(1, 0, k)
-    x *= 10 ** (-14 / 20) / np.sqrt((x[np.abs(x) > 0.01] ** 2).mean())
-    i = int((STARTS["memo"] + 0.25) * SR)
-    mix[i:i + len(x)] += x[:, None]
+    return x * 10 ** (-14 / 20) / np.sqrt((x[np.abs(x) > 0.01] ** 2).mean())
+
+
+def voice() -> np.ndarray:
+    """A full-length track that is silent except for the memo excerpt under the memo shot."""
+    out, x = np.zeros((int(TOTAL * SR), 2)), memo_clip()
+    i = int(VOICE_AT * SR)
+    out[i:i + len(x)] += x[:, None]
+    return out
+
+
+def soundtrack() -> np.ndarray:
+    mix = music(np.random.default_rng(7))
+    mix *= 10 ** (-19 / 20) / np.sqrt((mix ** 2).mean())  # music bed around -19 dBFS RMS
+    # duck the music under the voice memo, then lay the memo on top, clearly louder
+    t = np.arange(len(mix)) / SR
+    a, b = STARTS["memo"] + 0.05, STARTS["memo"] + LENGTHS["memo"] - 0.2
+    gain = np.interp(t, [0, a - 0.12, a, b, b + 0.25, TOTAL], [1, 1, 0.22, 0.22, 1, 1])
+    mix = mix * gain[:, None] + voice()
     fade = int(0.5 * SR)
     mix[-fade:] *= np.linspace(1, 0, fade)[:, None]
     return np.clip(mix, -0.99, 0.99)
+
+
+def voice_only(fmt: str) -> Path:
+    """Same picture with only the voice memo, for adding your own music in an editor."""
+    src, track = OUT / f"ledgerline-x-{fmt}.mp4", WORK / "voice.wav"
+    write_wav(track, voice())
+    out = OUT / f"ledgerline-x-{fmt}-voice-only.mp4"
+    subprocess.run(["ffmpeg", "-y", "-i", str(src), "-i", str(track), "-map", "0:v", "-map", "1:a", "-c:v", "copy",
+                    "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(out)], check=True, capture_output=True)
+    return out
 
 
 def write_wav(path: Path, x: np.ndarray) -> None:
@@ -496,6 +520,14 @@ def assemble(fmt: str, video: Path, shots: list, flash: float, audio: Path) -> P
 if __name__ == "__main__":
     stills = "--stills" in sys.argv
     fmts = [a for a in sys.argv[1:] if a in FORMATS] or list(FORMATS)
+    if "--voice-only" in sys.argv:  # re-mux the finished cuts with the memo alone, plus the memo clip itself
+        WORK.mkdir(parents=True, exist_ok=True)
+        for fmt in fmts:
+            print(f"wrote {voice_only(fmt)}")
+        clip = OUT / "voice-memo-excerpt.wav"
+        write_wav(clip, np.repeat(memo_clip()[:, None], 2, axis=1))
+        print(f"wrote {clip} (starts at {VOICE_AT:.2f}s in the cut)")
+        sys.exit()
     audio = WORK / "soundtrack.wav"
     if not stills:
         WORK.mkdir(parents=True, exist_ok=True)
