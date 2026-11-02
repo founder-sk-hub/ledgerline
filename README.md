@@ -15,6 +15,13 @@ human**. Nothing is paid or sent without approval, and every step is in a replay
 > theme *Build for Your World*.
 
 <!-- RESULTS:START -->
+### Results on the synthetic benchmark (recorded live runs, replayable in the app)
+
+| Engine | Docs | Anomalous docs stopped | Flag recall | Flag precision | Decision accuracy | EUR at risk caught | Agent time | Model cost | Recorded |
+|---|---|---|---|---|---|---|---|---|---|
+| Muse Spark · Meta Model API (`muse-spark-1.3`) | 32 | 12/12 | 100% | 100% | 97% | EUR 8,339.21 | 5.8 min | $1.25 | 2026-11-02 |
+
+Scored against `data/samples/ground_truth.json`, which the agent never sees. Local runs cost $0 in API fees.
 <!-- RESULTS:END -->
 
 ---
