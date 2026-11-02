@@ -1,0 +1,14 @@
+{
+  "name": "Spree Roastery GmbH",
+  "address": [
+    "Köpenicker Straße 40",
+    "10179 Berlin",
+    "Deutschland"
+  ],
+  "country": "DE",
+  "vat_id": "DE318840527",
+  "email": "ap@spree-roastery.example",
+  "iban": "DE28280340635566009041",
+  "bic": "SYNTDEB1XXX",
+  "note": "SYNTHETIC demo company"
+}

@@ -1,0 +1,126 @@
+{
+  "batch": "sample",
+  "description": "SYNTHETIC October batch for Spree Roastery GmbH (demo data)",
+  "documents": [
+    {
+      "key": "D01",
+      "filename": "Rechnung_KH-24-0912.pdf"
+    },
+    {
+      "key": "D02",
+      "filename": "KH-24-0931_invoice.pdf"
+    },
+    {
+      "key": "D03",
+      "filename": "IMG_4471.jpg"
+    },
+    {
+      "key": "D04",
+      "filename": "IMG_4502.jpg"
+    },
+    {
+      "key": "D05",
+      "filename": "PackWerk_RE_PW-2026-3381.pdf"
+    },
+    {
+      "key": "D06",
+      "filename": "Scan_2026-10-29.jpg"
+    },
+    {
+      "key": "D07",
+      "filename": "RGC-1022.pdf"
+    },
+    {
+      "key": "D08",
+      "filename": "RGC-1047.pdf"
+    },
+    {
+      "key": "D09",
+      "filename": "Fwd_ Rechnung Oktober.eml"
+    },
+    {
+      "key": "D10",
+      "filename": "Re_ Rechnung September (Erinnerung).eml"
+    },
+    {
+      "key": "D11",
+      "filename": "BT-5531.pdf"
+    },
+    {
+      "key": "D12",
+      "filename": "BT-5540.pdf"
+    },
+    {
+      "key": "D13",
+      "filename": "Cloudly invoice CL-IE-88213.eml"
+    },
+    {
+      "key": "D14",
+      "filename": "IMG_4488.jpg"
+    },
+    {
+      "key": "D15",
+      "filename": "Neue Bankverbindung - Rechnung KH-24-0958.eml"
+    },
+    {
+      "key": "D16",
+      "filename": "OSE_Invoice_4471.pdf"
+    },
+    {
+      "key": "D17",
+      "filename": "PackWerk_RE_PW-2026-3402.pdf"
+    },
+    {
+      "key": "D18",
+      "filename": "PW-2026-3410.pdf"
+    },
+    {
+      "key": "D19",
+      "filename": "KH-24-0950.pdf"
+    },
+    {
+      "key": "D20",
+      "filename": "IMG_4510.jpg"
+    },
+    {
+      "key": "D21",
+      "filename": "Quittung_Baumarkt.jpg"
+    },
+    {
+      "key": "D22",
+      "filename": "MH-77824_Sahne.pdf"
+    },
+    {
+      "key": "D23",
+      "filename": "Cloudly_Order_Form_Renewal_2027.pdf"
+    },
+    {
+      "key": "D24",
+      "filename": "Lieferschein_LS-55120.pdf"
+    },
+    {
+      "key": "D25",
+      "filename": "Kurier_Blitz_KB-1196.pdf"
+    },
+    {
+      "key": "D26",
+      "filename": "Baristech_BT-5519.pdf"
+    },
+    {
+      "key": "D27",
+      "filename": "Gutschrift_GS-0412.pdf"
+    },
+    {
+      "key": "D28",
+      "filename": "PW-2026-3395.pdf"
+    },
+    {
+      "key": "D29",
+      "filename": "IMG_4533.jpg"
+    },
+    {
+      "key": "D30",
+      "filename": "Newsletter PackWerk Herbstaktion.eml"
+    }
+  ]
+}

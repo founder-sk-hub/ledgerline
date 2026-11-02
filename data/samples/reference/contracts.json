@@ -1,0 +1,101 @@
+[
+  {
+    "contract_id": "C-005",
+    "vendor_id": "V005",
+    "title": "Unterhaltsreinigung 3 Filialen",
+    "start": "2026-01-01",
+    "end": "2026-12-31",
+    "terms": [
+      {
+        "item": "Monthly cleaning flat fee",
+        "keywords": [
+          "reinigung",
+          "unterhaltsreinigung",
+          "pauschale",
+          "monat"
+        ],
+        "unit": "month",
+        "price": 1450.0,
+        "vat_category": "services"
+      }
+    ]
+  },
+  {
+    "contract_id": "C-006",
+    "vendor_id": "V006",
+    "title": "Wartungsvertrag Espressomaschinen",
+    "start": "2026-03-01",
+    "end": "2027-02-28",
+    "terms": [
+      {
+        "item": "Technician labour",
+        "keywords": [
+          "arbeitszeit",
+          "arbeitsstunde",
+          "techniker",
+          "labour",
+          "labor",
+          "stunde"
+        ],
+        "unit": "h",
+        "price": 85.0,
+        "vat_category": "services"
+      },
+      {
+        "item": "Call-out fee",
+        "keywords": [
+          "anfahrt",
+          "call-out",
+          "callout",
+          "anfahrtspauschale"
+        ],
+        "unit": "visit",
+        "price": 45.0,
+        "vat_category": "services"
+      }
+    ]
+  },
+  {
+    "contract_id": "C-007",
+    "vendor_id": "V007",
+    "title": "Cloudly POS Business plan",
+    "start": "2026-01-01",
+    "end": "2026-12-31",
+    "terms": [
+      {
+        "item": "POS Business plan subscription (3 locations)",
+        "keywords": [
+          "subscription",
+          "pos",
+          "business",
+          "plan"
+        ],
+        "unit": "month",
+        "price": 249.0,
+        "vat_category": "digital_services"
+      }
+    ]
+  },
+  {
+    "contract_id": "C-008",
+    "vendor_id": "V008",
+    "title": "Rahmenvertrag Kurierfahrten",
+    "start": "2026-02-01",
+    "end": "2027-01-31",
+    "terms": [
+      {
+        "item": "Same-day delivery within Berlin",
+        "keywords": [
+          "zustellung",
+          "kurierfahrt",
+          "fahrt",
+          "delivery",
+          "lieferung"
+        ],
+        "unit": "delivery",
+        "price": 12.5,
+        "vat_category": "services"
+      }
+    ]
+  }
+]

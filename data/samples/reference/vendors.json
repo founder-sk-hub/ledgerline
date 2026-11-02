@@ -1,0 +1,148 @@
+[
+  {
+    "vendor_id": "V001",
+    "name": "Kaffeeimport Hansa GmbH",
+    "country": "DE",
+    "address": [
+      "Am Sandtorkai 12",
+      "20457 Hamburg"
+    ],
+    "vat_id": "DE811290455",
+    "email": "rechnung@kaffeeimport-hansa.de",
+    "domain": "kaffeeimport-hansa.de",
+    "phone": "+49 40 555 0192",
+    "iban": "DE53880009184638342495",
+    "bic": "SYNTDEHHXXX",
+    "payment_terms_days": 30,
+    "language": "de",
+    "contact": "Jana Petersen"
+  },
+  {
+    "vendor_id": "V002",
+    "name": "Molkerei Havelland eG",
+    "country": "DE",
+    "address": [
+      "Dorfstraße 7",
+      "14641 Nauen"
+    ],
+    "vat_id": "DE813377020",
+    "email": "faktura@molkerei-havelland.de",
+    "domain": "molkerei-havelland.de",
+    "phone": "+49 3321 555 40",
+    "iban": "DE26298872022538622610",
+    "bic": "SYNTDEB2XXX",
+    "payment_terms_days": 14,
+    "language": "de",
+    "contact": "Uwe Krüger"
+  },
+  {
+    "vendor_id": "V003",
+    "name": "PackWerk Verpackungen GmbH",
+    "country": "DE",
+    "address": [
+      "Industriestraße 88",
+      "04129 Leipzig"
+    ],
+    "vat_id": "DE296601184",
+    "email": "buchhaltung@packwerk.de",
+    "domain": "packwerk.de",
+    "phone": "+49 341 555 7700",
+    "iban": "DE46712433174514404740",
+    "bic": "SYNTDEL1XXX",
+    "payment_terms_days": 30,
+    "language": "de",
+    "contact": "Sabine Wolf"
+  },
+  {
+    "vendor_id": "V004",
+    "name": "Rotterdam Green Coffee Traders B.V.",
+    "country": "NL",
+    "address": [
+      "Maashaven 21",
+      "3072 AH Rotterdam",
+      "Netherlands"
+    ],
+    "vat_id": "NL859432178B01",
+    "email": "accounts@rgc-traders.nl",
+    "domain": "rgc-traders.nl",
+    "phone": "+31 10 555 3311",
+    "iban": "NL51SYNT0417726391",
+    "bic": "SYNTNL2AXXX",
+    "payment_terms_days": 30,
+    "language": "en",
+    "contact": "Pieter de Vries"
+  },
+  {
+    "vendor_id": "V005",
+    "name": "CleanTeam Berlin GmbH",
+    "country": "DE",
+    "address": [
+      "Prenzlauer Allee 190",
+      "10405 Berlin"
+    ],
+    "vat_id": "DE327718840",
+    "email": "rechnungen@cleanteam-berlin.de",
+    "domain": "cleanteam-berlin.de",
+    "phone": "+49 30 555 8812",
+    "iban": "DE31893663944396132287",
+    "bic": "SYNTDEB3XXX",
+    "payment_terms_days": 14,
+    "language": "de",
+    "contact": "Mehmet Aydın"
+  },
+  {
+    "vendor_id": "V006",
+    "name": "Baristech Service GmbH",
+    "country": "DE",
+    "address": [
+      "Friedrich-Engels-Straße 24",
+      "14473 Potsdam"
+    ],
+    "vat_id": "DE301845562",
+    "email": "service@baristech.de",
+    "domain": "baristech.de",
+    "phone": "+49 331 555 2040",
+    "iban": "DE25743220909661934046",
+    "bic": "SYNTDEB4XXX",
+    "payment_terms_days": 14,
+    "language": "de",
+    "contact": "Lukas Brandt"
+  },
+  {
+    "vendor_id": "V007",
+    "name": "Cloudly Software Ltd",
+    "country": "IE",
+    "address": [
+      "5 Hanover Quay",
+      "Dublin 2, D02 X285",
+      "Ireland"
+    ],
+    "vat_id": "IE3876291QH",
+    "email": "billing@cloudly.io",
+    "domain": "cloudly.io",
+    "phone": "+353 1 555 0400",
+    "iban": "IE93SYNT99051433471209",
+    "bic": "SYNTIE2DXXX",
+    "payment_terms_days": 14,
+    "language": "en",
+    "contact": "Aoife Byrne"
+  },
+  {
+    "vendor_id": "V008",
+    "name": "Kurier Blitz Berlin UG",
+    "country": "DE",
+    "address": [
+      "Sonnenallee 221",
+      "12059 Berlin"
+    ],
+    "vat_id": "DE342210967",
+    "email": "abrechnung@kurierblitz.de",
+    "domain": "kurierblitz.de",
+    "phone": "+49 30 555 6060",
+    "iban": "DE89275181288137281708",
+    "bic": "SYNTDEB5XXX",
+    "payment_terms_days": 14,
+    "language": "de",
+    "contact": "Nadine Schulz"
+  }
+]

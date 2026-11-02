@@ -1,0 +1,445 @@
+{
+  "note": "Planted anomalies for evaluation only. Never shown to the agent.",
+  "documents": [
+    {
+      "key": "D01",
+      "filename": "Rechnung_KH-24-0912.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 2040.0,
+        "vat": 142.8,
+        "gross": 2182.8
+      }
+    },
+    {
+      "key": "D02",
+      "filename": "KH-24-0931_invoice.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "hold",
+      "flags": [
+        "PRICE_DRIFT"
+      ],
+      "at_risk": 241.82,
+      "note": "Unit price 10.53 vs PO 9.40 (+12.0%)",
+      "amounts": {
+        "net": 2106.0,
+        "vat": 147.42,
+        "gross": 2253.42
+      }
+    },
+    {
+      "key": "D03",
+      "filename": "IMG_4471.jpg",
+      "format": "photo",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 436.0,
+        "vat": 30.52,
+        "gross": 466.52
+      }
+    },
+    {
+      "key": "D04",
+      "filename": "IMG_4502.jpg",
+      "format": "photo",
+      "type": "invoice",
+      "decision": "hold",
+      "flags": [
+        "VAT_RATE"
+      ],
+      "at_risk": 52.32,
+      "note": "Milk charged at 19% instead of reduced 7%",
+      "amounts": {
+        "net": 436.0,
+        "vat": 82.84,
+        "gross": 518.84
+      }
+    },
+    {
+      "key": "D05",
+      "filename": "PackWerk_RE_PW-2026-3381.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 850.0,
+        "vat": 161.5,
+        "gross": 1011.5
+      }
+    },
+    {
+      "key": "D06",
+      "filename": "Scan_2026-10-29.jpg",
+      "format": "scan",
+      "type": "invoice",
+      "decision": "reject",
+      "flags": [
+        "DUPLICATE"
+      ],
+      "at_risk": 1011.5,
+      "note": "Same invoice as D05, re-sent as scan",
+      "amounts": {
+        "net": 850.0,
+        "vat": 161.5,
+        "gross": 1011.5
+      }
+    },
+    {
+      "key": "D07",
+      "filename": "RGC-1022.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 4260.0,
+        "vat": 0.0,
+        "gross": 4260.0
+      }
+    },
+    {
+      "key": "D08",
+      "filename": "RGC-1047.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "hold",
+      "flags": [
+        "VAT_RATE"
+      ],
+      "at_risk": 894.6,
+      "note": "Dutch 21% VAT charged on intra-EU B2B supply; should be 0% reverse charge",
+      "amounts": {
+        "net": 4260.0,
+        "vat": 894.6,
+        "gross": 5154.6
+      }
+    },
+    {
+      "key": "D09",
+      "filename": "Fwd_ Rechnung Oktober.eml",
+      "format": "email",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 1450.0,
+        "vat": 275.5,
+        "gross": 1725.5
+      }
+    },
+    {
+      "key": "D10",
+      "filename": "Re_ Rechnung September (Erinnerung).eml",
+      "format": "email",
+      "type": "invoice",
+      "decision": "reject",
+      "flags": [
+        "DUPLICATE"
+      ],
+      "at_risk": 1725.5,
+      "note": "Re-issue of CT-2026-09, already paid on 2026-10-05",
+      "amounts": {
+        "net": 1450.0,
+        "vat": 275.5,
+        "gross": 1725.5
+      }
+    },
+    {
+      "key": "D11",
+      "filename": "BT-5531.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 720.5,
+        "vat": 136.9,
+        "gross": 857.4
+      }
+    },
+    {
+      "key": "D12",
+      "filename": "BT-5540.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "hold",
+      "flags": [
+        "PRICE_DRIFT"
+      ],
+      "at_risk": 71.4,
+      "note": "Labour 95 €/h vs contract C-006 85 €/h (+11.8%)",
+      "amounts": {
+        "net": 615.0,
+        "vat": 116.85,
+        "gross": 731.85
+      }
+    },
+    {
+      "key": "D13",
+      "filename": "Cloudly invoice CL-IE-88213.eml",
+      "format": "email",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 249.0,
+        "vat": 0.0,
+        "gross": 249.0
+      }
+    },
+    {
+      "key": "D14",
+      "filename": "IMG_4488.jpg",
+      "format": "photo",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 175.0,
+        "vat": 33.25,
+        "gross": 208.25
+      }
+    },
+    {
+      "key": "D15",
+      "filename": "Neue Bankverbindung - Rechnung KH-24-0958.eml",
+      "format": "email",
+      "type": "invoice",
+      "decision": "reject",
+      "flags": [
+        "BANK_DETAILS_CHANGED",
+        "SENDER_DOMAIN_MISMATCH"
+      ],
+      "at_risk": 2182.8,
+      "note": "Lookalike sender domain + new Lithuanian IBAN: classic payment-diversion fraud",
+      "amounts": {
+        "net": 2040.0,
+        "vat": 142.8,
+        "gross": 2182.8
+      }
+    },
+    {
+      "key": "D16",
+      "filename": "OSE_Invoice_4471.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "escalate",
+      "flags": [
+        "UNKNOWN_VENDOR",
+        "MISSING_PO"
+      ],
+      "at_risk": 1284.01,
+      "note": "Vendor not in master data, no PO, above EUR 500 PO threshold",
+      "amounts": {
+        "net": 1079.0,
+        "vat": 205.01,
+        "gross": 1284.01
+      }
+    },
+    {
+      "key": "D17",
+      "filename": "PackWerk_RE_PW-2026-3402.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 1050.0,
+        "vat": 199.5,
+        "gross": 1249.5
+      }
+    },
+    {
+      "key": "D18",
+      "filename": "PW-2026-3410.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "hold",
+      "flags": [
+        "QTY_EXCEEDS_PO"
+      ],
+      "at_risk": 202.3,
+      "note": "PO 20,000 cups; 10,000 already invoiced (PW-2026-3381); 12,000 billed -> 2,000 over",
+      "amounts": {
+        "net": 1020.0,
+        "vat": 193.8,
+        "gross": 1213.8
+      }
+    },
+    {
+      "key": "D19",
+      "filename": "KH-24-0950.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "hold",
+      "flags": [
+        "ARITHMETIC"
+      ],
+      "at_risk": 107.0,
+      "note": "Line total 1,880.00 but net stated as 1,980.00",
+      "amounts": {
+        "net": 1980.0,
+        "vat": 138.6,
+        "gross": 2118.6
+      }
+    },
+    {
+      "key": "D20",
+      "filename": "IMG_4510.jpg",
+      "format": "photo",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 436.0,
+        "vat": 30.52,
+        "gross": 466.52
+      }
+    },
+    {
+      "key": "D21",
+      "filename": "Quittung_Baumarkt.jpg",
+      "format": "photo",
+      "type": "receipt",
+      "decision": "file",
+      "flags": [],
+      "note": "Card-paid expense receipt under EUR 250",
+      "amounts": {
+        "net": 64.25,
+        "vat": 12.21,
+        "gross": 76.46
+      }
+    },
+    {
+      "key": "D22",
+      "filename": "MH-77824_Sahne.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "note": "No PO needed below EUR 500",
+      "amounts": {
+        "net": 128.0,
+        "vat": 8.96,
+        "gross": 136.96
+      }
+    },
+    {
+      "key": "D23",
+      "filename": "Cloudly_Order_Form_Renewal_2027.pdf",
+      "format": "pdf",
+      "type": "contract",
+      "decision": "file",
+      "flags": [
+        "CONTRACT_PRICE_CHANGE"
+      ],
+      "note": "Renewal raises fee 249 -> 279 EUR/month (+12%) from 2027; info, not payable",
+      "amounts": {
+        "net": 0.0,
+        "vat": 0.0,
+        "gross": 0.0
+      }
+    },
+    {
+      "key": "D24",
+      "filename": "Lieferschein_LS-55120.pdf",
+      "format": "pdf",
+      "type": "delivery_note",
+      "decision": "file",
+      "flags": [],
+      "amounts": {
+        "net": 0.0,
+        "vat": 0.0,
+        "gross": 0.0
+      }
+    },
+    {
+      "key": "D25",
+      "filename": "Kurier_Blitz_KB-1196.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 112.5,
+        "vat": 21.38,
+        "gross": 133.88
+      }
+    },
+    {
+      "key": "D26",
+      "filename": "Baristech_BT-5519.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "amounts": {
+        "net": 172.5,
+        "vat": 32.78,
+        "gross": 205.28
+      }
+    },
+    {
+      "key": "D27",
+      "filename": "Gutschrift_GS-0412.pdf",
+      "format": "pdf",
+      "type": "credit_note",
+      "decision": "approve",
+      "flags": [],
+      "note": "Net against KH-24-0912",
+      "amounts": {
+        "net": -68.0,
+        "vat": -4.76,
+        "gross": -72.76
+      }
+    },
+    {
+      "key": "D28",
+      "filename": "PW-2026-3395.pdf",
+      "format": "pdf",
+      "type": "invoice",
+      "decision": "approve",
+      "flags": [],
+      "note": "No PO needed below EUR 500",
+      "amounts": {
+        "net": 64.0,
+        "vat": 12.16,
+        "gross": 76.16
+      }
+    },
+    {
+      "key": "D29",
+      "filename": "IMG_4533.jpg",
+      "format": "photo",
+      "type": "receipt",
+      "decision": "file",
+      "flags": [],
+      "note": "Card-paid, mixed 7%/19% receipt",
+      "amounts": {
+        "net": 65.34,
+        "vat": 10.19,
+        "gross": 75.53
+      }
+    },
+    {
+      "key": "D30",
+      "filename": "Newsletter PackWerk Herbstaktion.eml",
+      "format": "email",
+      "type": "other",
+      "decision": "file",
+      "flags": [],
+      "amounts": {
+        "net": 0.0,
+        "vat": 0.0,
+        "gross": 0.0
+      }
+    }
+  ]
+}

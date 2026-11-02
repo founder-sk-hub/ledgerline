@@ -1,0 +1,135 @@
+[
+  {
+    "po_number": "PO-2026-101",
+    "vendor_id": "V001",
+    "issue_date": "2026-10-05",
+    "status": "open",
+    "lines": [
+      {
+        "line": 1,
+        "description": "Brazil Santos NY2 17/18 green coffee",
+        "keywords": [
+          "santos",
+          "brazil",
+          "brasilien"
+        ],
+        "quantity": 600,
+        "unit": "kg",
+        "unit_price": 6.8,
+        "vat_category": "food"
+      },
+      {
+        "line": 2,
+        "description": "Ethiopia Yirgacheffe G2 green coffee",
+        "keywords": [
+          "yirgacheffe",
+          "ethiopia",
+          "äthiopien"
+        ],
+        "quantity": 400,
+        "unit": "kg",
+        "unit_price": 9.4,
+        "vat_category": "food"
+      }
+    ]
+  },
+  {
+    "po_number": "PO-2026-102",
+    "vendor_id": "V003",
+    "issue_date": "2026-10-02",
+    "status": "open",
+    "lines": [
+      {
+        "line": 1,
+        "description": "Paper cup 12oz double wall, printed",
+        "keywords": [
+          "becher",
+          "cup",
+          "12oz"
+        ],
+        "quantity": 20000,
+        "unit": "pcs",
+        "unit_price": 0.085,
+        "vat_category": "goods"
+      },
+      {
+        "line": 2,
+        "description": "Kraft coffee bag 250g with valve",
+        "keywords": [
+          "kraft",
+          "beutel",
+          "bag",
+          "250g"
+        ],
+        "quantity": 5000,
+        "unit": "pcs",
+        "unit_price": 0.21,
+        "vat_category": "goods"
+      }
+    ]
+  },
+  {
+    "po_number": "PO-2026-103",
+    "vendor_id": "V004",
+    "issue_date": "2026-09-28",
+    "status": "open",
+    "lines": [
+      {
+        "line": 1,
+        "description": "Colombia Supremo 17/18 green coffee",
+        "keywords": [
+          "colombia",
+          "supremo",
+          "kolumbien"
+        ],
+        "quantity": 1200,
+        "unit": "kg",
+        "unit_price": 7.1,
+        "vat_category": "food"
+      }
+    ]
+  },
+  {
+    "po_number": "PO-2026-104",
+    "vendor_id": "V002",
+    "issue_date": "2026-10-09",
+    "status": "open",
+    "note": "Standing order, 400 L per week, delivery weeks 42-45",
+    "lines": [
+      {
+        "line": 1,
+        "description": "Whole milk 3.5% (Vollmilch)",
+        "keywords": [
+          "vollmilch",
+          "milch",
+          "milk"
+        ],
+        "quantity": 1600,
+        "unit": "L",
+        "unit_price": 1.09,
+        "vat_category": "food"
+      }
+    ]
+  },
+  {
+    "po_number": "PO-2026-105",
+    "vendor_id": "V006",
+    "issue_date": "2026-10-01",
+    "status": "open",
+    "lines": [
+      {
+        "line": 1,
+        "description": "Grinder burr set Mythos One (pair)",
+        "keywords": [
+          "mahlscheiben",
+          "burr",
+          "mythos"
+        ],
+        "quantity": 2,
+        "unit": "set",
+        "unit_price": 189.0,
+        "vat_category": "goods"
+      }
+    ]
+  }
+]

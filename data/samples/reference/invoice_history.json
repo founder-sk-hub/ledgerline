@@ -1,0 +1,138 @@
+[
+  {
+    "vendor_id": "V001",
+    "invoice_number": "KH-24-0877",
+    "issue_date": "2026-08-19",
+    "paid_on": "2026-09-15",
+    "po_number": "PO-2026-077",
+    "service_period": null,
+    "net": 4080.0,
+    "vat": 285.6,
+    "gross": 4365.6,
+    "status": "paid",
+    "lines": [
+      {
+        "description": "Brazil Santos NY2 green coffee",
+        "quantity": 600,
+        "unit_price": 6.8
+      }
+    ]
+  },
+  {
+    "vendor_id": "V002",
+    "invoice_number": "MH-77779",
+    "issue_date": "2026-10-02",
+    "paid_on": "2026-10-14",
+    "po_number": "PO-2026-088",
+    "service_period": "KW 40",
+    "net": 436.0,
+    "vat": 30.52,
+    "gross": 466.52,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V002",
+    "invoice_number": "MH-77790",
+    "issue_date": "2026-10-09",
+    "paid_on": "2026-10-21",
+    "po_number": "PO-2026-088",
+    "service_period": "KW 41",
+    "net": 436.0,
+    "vat": 30.52,
+    "gross": 466.52,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V003",
+    "invoice_number": "PW-2026-3301",
+    "issue_date": "2026-09-10",
+    "paid_on": "2026-10-08",
+    "po_number": "PO-2026-071",
+    "service_period": null,
+    "net": 1700.0,
+    "vat": 323.0,
+    "gross": 2023.0,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V004",
+    "invoice_number": "RGC-0988",
+    "issue_date": "2026-09-04",
+    "paid_on": "2026-10-02",
+    "po_number": "PO-2026-069",
+    "service_period": null,
+    "net": 4260.0,
+    "vat": 0.0,
+    "gross": 4260.0,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V005",
+    "invoice_number": "CT-2026-08",
+    "issue_date": "2026-08-31",
+    "paid_on": "2026-09-10",
+    "po_number": null,
+    "service_period": "August 2026",
+    "net": 1450.0,
+    "vat": 275.5,
+    "gross": 1725.5,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V005",
+    "invoice_number": "CT-2026-09",
+    "issue_date": "2026-09-30",
+    "paid_on": "2026-10-05",
+    "po_number": null,
+    "service_period": "September 2026",
+    "net": 1450.0,
+    "vat": 275.5,
+    "gross": 1725.5,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V006",
+    "invoice_number": "BT-5502",
+    "issue_date": "2026-09-15",
+    "paid_on": "2026-09-26",
+    "po_number": null,
+    "service_period": null,
+    "net": 215.0,
+    "vat": 40.85,
+    "gross": 255.85,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V007",
+    "invoice_number": "CL-IE-87102",
+    "issue_date": "2026-09-01",
+    "paid_on": "2026-09-03",
+    "po_number": null,
+    "service_period": "September 2026",
+    "net": 249.0,
+    "vat": 0.0,
+    "gross": 249.0,
+    "status": "paid",
+    "lines": []
+  },
+  {
+    "vendor_id": "V008",
+    "invoice_number": "KB-1160",
+    "issue_date": "2026-09-30",
+    "paid_on": "2026-10-09",
+    "po_number": null,
+    "service_period": "September 2026",
+    "net": 200.0,
+    "vat": 38.0,
+    "gross": 238.0,
+    "status": "paid",
+    "lines": []
+  }
+]
