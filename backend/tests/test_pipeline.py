@@ -43,6 +43,7 @@ class FakeProvider:
     def __init__(self, cfg, concurrency=6, docs=None):
         self.cfg = cfg
         self.by_file = {d.filename: perfect_extraction(d) for d in docs}
+        self.plans = 0
 
     def instructions(self, text):
         return {"role": self.cfg.developer_role, "content": text}
@@ -60,6 +61,9 @@ class FakeProvider:
             content = json.dumps(self.by_file[fname])
         elif schema == "batch_plan":
             content = json.dumps({"summary": "test plan", "steps": [{"title": "Read", "detail": "all"}], "watchlist": []})
+            self.plans += 1
+            if self.plans == 1:  # first reply cut off at max_tokens: only the steps array parses
+                content = content[:content.index(', "watchlist"')]
         elif schema == "verification":
             content = json.dumps({"verdict": "confirmed", "overall_confidence": 0.93, "notes": "",
                                   "claims": [{"claim": "amount", "supported": True, "page": 1, "quote": "x",
@@ -137,6 +141,7 @@ def test_live_run_to_approval_and_execution(client, truth):
     assert st["run"]["status"] == "awaiting_approval", st["run"]
     by_file = {d["filename"]: d for d in st["docs"]}
     assert len(by_file) == 32
+    assert st["plan"]["summary"] == "test plan"  # the cut-off first reply was retried, not used
 
     ev = st["evaluation"]
     assert ev["flag_recall"] == 1.0 and ev["flag_precision"] == 1.0, [r for r in ev["rows"] if r["flags"] != r["expected_flags"]]

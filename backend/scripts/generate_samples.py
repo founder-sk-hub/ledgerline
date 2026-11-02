@@ -920,7 +920,8 @@ SOURCES = OUT / "sources"
 
 
 def write_voice_memo(path: Path) -> None:
-    """Synthetic voice memo via macOS text-to-speech (sample data only), as 24 kHz mono 16-bit WAV."""
+    """Synthetic voice memo (sample data only), 24 kHz mono 16-bit WAV. The committed one was made with ElevenLabs
+    text-to-speech by make_voice_memo.py; without it, macOS text-to-speech is the fallback."""
     cached = SOURCES / "voice_memo_tom.wav"
     if not cached.exists():
         aiff = OUT / ".tmp" / "memo.aiff"

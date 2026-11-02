@@ -99,6 +99,15 @@ def norm_period(s: str | None) -> str:
     return re.sub(r"[^0-9a-z]", "", s)
 
 
+def iban_valid(iban: str | None) -> bool:
+    """ISO 13616 mod-97 check. A misread digit almost always breaks it, so an invalid IBAN is a reading problem,
+    not a new bank account."""
+    i = norm_id(iban)
+    if not 15 <= len(i) <= 34 or not i[:2].isalpha() or not i[2:4].isdigit():
+        return False
+    return int("".join(str(int(c, 36)) for c in i[4:] + i[:4])) % 97 == 1
+
+
 def domain_of(email: str | None) -> str:
     m = re.search(r"@([A-Za-z0-9.-]+)", email or "")
     return m.group(1).lower().rstrip(".>") if m else ""
@@ -199,6 +208,9 @@ def lookup_vendor(books: Books, doc_id: str) -> dict:
         out["iban_check"] = "not on document (master IBAN will be used)"
     elif doc_iban == norm_id(v["iban"]):
         out["iban_check"] = "matches vendor master"
+    elif not iban_valid(doc_iban):
+        out["iban_check"] = ("unreadable: the IBAN read from the document fails the IBAN checksum, so it is a reading "
+                             "error, not a different account (payment uses the master IBAN)")
     else:
         out["iban_check"] = "MISMATCH"
         if dtype in PAYABLE:

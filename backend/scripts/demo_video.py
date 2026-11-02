@@ -26,7 +26,7 @@ BASE = "http://localhost:8020"
 VW, VH = 1920, 1080  # full-HD capture; the app is laid out 1280 px wide and scaled 1.5x to fill the frame
 BASE_SCALE = 1.5
 MEMO = ROOT / "data" / "samples" / "batch" / "Sprachmemo_Tom_Filiale-Mitte.wav"
-MEMO_CUTS = [(0.0, 2.8), (8.7, 12.7)]  # "Hey, hier ist Tom..." + "Da sind nur achtundzwanzig Kannen gekommen, statt vierzig"
+MEMO_CUTS = [(0.0, 2.25), (6.8, 9.9)]  # "Hey, hier ist Tom..." + "Da sind nur achtundzwanzig Kannen gekommen, statt vierzig"
 
 OVERLAY_JS = """
 () => {
@@ -306,7 +306,7 @@ def record() -> None:
         d.go(f"#/run/{run_id}/metrics")
         end = d.say("close")
         d.focus(page.locator("text=Time saved").first.locator("xpath=ancestor::div[contains(@class,'grid')][1]"), 1.1)
-        d.caption("<b>12 / 12</b> planted problems stopped · <b>€8,339</b> flagged at risk · <b>6 min</b> · <b>$1.25</b> of model calls")
+        d.caption("<b>12 / 12</b> planted problems stopped · <b>€8,339</b> flagged at risk · <b>2.7 min</b> · <b>$1.14</b> of model calls")
         d.wait(5.0)
         d.focus(section("Accuracy on the synthetic benchmark"), 1.1)
         d.until(end + 0.3)

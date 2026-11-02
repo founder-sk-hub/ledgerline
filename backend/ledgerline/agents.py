@@ -177,6 +177,9 @@ relevant and what the findings mean:
 Policy:
 - Payables (invoice, credit_note, reminder): run lookup_vendor, detect_duplicate, compare_to_po, check_vat and
   check_goods_receipt. Call independent tools in parallel.
+- Missing goods-receipt evidence is normal: most invoices have no delivery photo or voice memo, and a supplier's
+  own delivery note is not proof either. Never hold or escalate only because receiving evidence is absent; act on
+  goods receipt only when check_goods_receipt reports a shortfall.
 - receiving_note / delivery_photo: our own goods-receipt evidence. Run check_goods_receipt to see which invoice it
   belongs to, then decision "file". Describe the link exactly as the tool reports it (e.g. "same vendor and
   delivery week"); never claim the document mentions an invoice number it doesn't contain.
@@ -202,7 +205,8 @@ For each claim: supported true/false, the exact quote from the document, the 1-b
 bbox [x_min, y_min, x_max, y_max] on a normalized 0-1000 grid of that page image, and your confidence 0-1.
 Facts from the company's own systems (PO prices, vendor-master IBAN, payment history) and findings computed from
 OTHER documents (photo counts by SAM 3.1, transcribed voice memos) are given to you as true; you verify the side
-of each claim that this document shows.
+of each claim that this document shows. Which invoice a receiving note or delivery photo belongs to is decided by
+the system's matching (goods_receipt_link, true); do not dispute it because the document doesn't name the invoice.
 verdict = "disputed" if any material claim is not supported by the document or the decision does not follow from
 the evidence; otherwise "confirmed". overall_confidence reflects how sure you are about the decision."""
 
@@ -285,7 +289,11 @@ class Run:
             res = await self.llm(agent, doc_id, purpose, messages, effort=effort, max_tokens=max_tokens,
                                  **structured_request(self.p, name, schema))
             try:
-                return structured_result(res, name)
+                out = structured_result(res, name)
+                # a reply cut off at max_tokens can still parse loosely, e.g. as one inner array
+                if not isinstance(out, dict) or any(k not in out for k in schema.get("required", [])):
+                    raise ValueError("reply is not a complete JSON object for the schema")
+                return out
             except (ValueError, json.JSONDecodeError) as e:
                 if attempt:
                     raise AgentError(f"{name}: unparseable model output ({e})") from e
@@ -355,7 +363,7 @@ class Run:
         try:
             plan = await self.structured("planner", None, "plan batch", planner_prompt(self.books),
                                          "Batch manifest:\n" + json.dumps(manifest, ensure_ascii=False, indent=1),
-                                         "batch_plan", PLAN_SCHEMA, EFFORT["planner"], max_tokens=3000)
+                                         "batch_plan", PLAN_SCHEMA, EFFORT["planner"])
         except (AgentError, ProviderError) as e:
             plan = {"summary": "Default plan (planner unavailable).", "steps": [], "watchlist": [], "error": str(e)}
         self.emit("plan.created", plan, "planner")

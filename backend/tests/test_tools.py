@@ -64,3 +64,16 @@ def test_three_way_match(books):
     assert check_goods_receipt(books, "D08")["issues"] == []
     assert check_goods_receipt(books, "D04")["issues"] == []
     assert check_goods_receipt(books, "D32")["applies_to"][0]["invoice"] == "RGC-1022"
+
+
+def test_misread_iban_is_not_a_bank_change(books):
+    from ledgerline.tools import iban_valid
+
+    master = books.vendor("V002")["iban"]
+    misread = master[:2] + "46" + master[4:]  # a blurry photo turned check digits 26 into 46
+    assert iban_valid(master) and not iban_valid(misread)
+    books.extractions["D20"]["iban"] = misread
+    out = lookup_vendor(books, "D20")
+    assert out["issues"] == [] and out["iban_check"].startswith("unreadable")
+    # a real, valid foreign IBAN (the fraud email) is still flagged
+    assert any(i["code"] == "BANK_DETAILS_CHANGED" for i in lookup_vendor(books, "D15")["issues"])
